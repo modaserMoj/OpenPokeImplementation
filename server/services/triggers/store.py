@@ -93,6 +93,16 @@ class TriggerStore:
             cursor = conn.execute(sql, payload)
             return cursor.rowcount > 0
 
+    def reassign_agent(self, old_agent_name: str, new_agent_name: str) -> int:
+        """Move every trigger of one agent to another (used when duplicate agents are merged).
+        update() cannot do this: its WHERE clause and SET share the agent_name parameter."""
+        with self._lock, self._connect() as conn:
+            cursor = conn.execute(
+                "UPDATE triggers SET agent_name = ?, updated_at = ? WHERE agent_name = ?",
+                (new_agent_name, to_storage_timestamp(utc_now()), old_agent_name),
+            )
+            return cursor.rowcount
+
     def list_for_agent(self, agent_name: str) -> List[TriggerRecord]:
         with self._lock, self._connect() as conn:
             rows = conn.execute(

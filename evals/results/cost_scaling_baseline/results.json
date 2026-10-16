@@ -1,0 +1,69 @@
+{
+  "label": "baseline",
+  "model": "anthropic/claude-sonnet-4",
+  "history": [
+    {
+      "messages": 0,
+      "history_chars": 0,
+      "prompt_chars": 12688,
+      "prompt_tokens": 3340,
+      "cost_usd": 0.01026
+    },
+    {
+      "messages": 10,
+      "history_chars": 1840,
+      "prompt_chars": 14524
+    },
+    {
+      "messages": 25,
+      "history_chars": 5070,
+      "prompt_chars": 17754
+    },
+    {
+      "messages": 50,
+      "history_chars": 10787,
+      "prompt_chars": 23471,
+      "prompt_tokens": 6657,
+      "cost_usd": 0.020211
+    },
+    {
+      "messages": 75,
+      "history_chars": 15702,
+      "prompt_chars": 28386
+    },
+    {
+      "messages": 100,
+      "history_chars": 21708,
+      "prompt_chars": 34392,
+      "prompt_tokens": 9998,
+      "cost_usd": 0.030234
+    }
+  ],
+  "worker": [
+    {
+      "prior_runs": 0,
+      "system_chars": 3768,
+      "prompt_tokens": 3532,
+      "cost_usd": 0.010836
+    },
+    {
+      "prior_runs": 5,
+      "system_chars": 10069,
+      "prompt_tokens": 5568,
+      "cost_usd": 0.016944
+    },
+    {
+      "prior_runs": 20,
+      "system_chars": 29267,
+      "prompt_tokens": 11686,
+      "cost_usd": 0.035298
+    },
+    {
+      "prior_runs": 50,
+      "system_chars": 67021,
+      "prompt_tokens": 23779,
+      "cost_usd": 0.071577
+    }
+  ],
+  "spent_usd": 0.19536
+}

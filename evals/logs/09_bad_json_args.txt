@@ -1,0 +1,11 @@
+PROBLEM: Malformed tool-argument JSON silently becomes {}
+CLAIM:   Execution runtime swallows JSONDecodeError.
+==============================================================================
+raw arguments : '{"thread_id": "t1", "recipient_email": "a@b.test", "message_body": "Hel'
+parsed        : {}
+executing it  : success=False, result={'error': "gmail_reply_to_thread() missing 3 required positional arguments: 'thread_id', 'recipient_email', and 'message_body'"}
+The model is told 'missing required positional arguments', never that its JSON was invalid.
+Contrast: the INTERACTION runtime reports 'invalid json: ...' explicitly (inconsistent handling).
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Decode error discarded; downstream TypeError is misleading.

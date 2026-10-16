@@ -1,0 +1,13 @@
+LIVE TEST 5 (second try): duplicate agents (2026-10-14 23:58) - NO DUPLICATE; the duplicate check itself was again not triggered
+Step 1 created worker 'Search sam.park' (people: sam.park@example.com, no trailing period after the fix). Step 2: the main agent wrote the short draft itself (send_draft), so no second agent was ever named.
+Live reuse evidence elsewhere: test 3 'summarize my latest email' went to the existing 'Latest Email Sender' agent (Reused agent, 23:42:49) instead of creating a new one; the maintenance job merged 'Email to Jane Doe' into 'Email to Jane'.
+Maintenance pass after this restart: merged 0, dormant 0, archived 0.
+
+<user_message timestamp="2026-10-14 23:58:02">search my inbox for emails from sam.park@example.com</user_message>
+<poke_reply timestamp="2026-10-14 23:58:05">Checking your inbox for anything from sam.park.</poke_reply>
+<agent_message timestamp="2026-10-14 23:58:16">[SUCCESS] Search sam.park: Five emails from sam.park@example.com (Alex Kim) turned up. All were sent to you@example.com, which looks like the user's own address. All five are in the Inbox with the IMPORTANT and CATEGORY_PERSONAL labels. None has the UNREAD label, so all five are **read**. I didn't act on anything in them and sent no
+<poke_reply timestamp="2026-10-14 23:58:19">Found five emails from sam.park, all from Nov 2021 and all read. They look like files you sent yourself: PDFs named "gg", "diagnostic" and "termtest2" (twice), plus one "Sent from my iPhone" note with no content. Nothing recent, and no dinner reply. The dinner email to them is still unsent. Want it as is (6 PM), or changed to 7 PM?</poke_reply>
+<user_message timestamp="2026-10-14 23:58:41">draft an email to mod16 saying 7pm works for dinner</user_message>
+<poke_reply timestamp="2026-10-14 23:58:44">To: sam.park@example.com | Subject: Dinner tomorrow at 7 PM works |  | Hi, 7 PM works for dinner tomorrow.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:58:44">Draft's above. Nothing's sent yet. Reply "yes" to send, or tell me what to change.</poke_reply>
+<wait timestamp="2026-10-14 23:58:45">Draft shown and user prompted; awaiting confirmation.</wait>

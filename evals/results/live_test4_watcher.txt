@@ -1,0 +1,7 @@
+LIVE TEST 4: important-email watcher (2026-10-14 23:45-23:49) - PASSED
+Two emails: a verification code and a newsletter. Haiku classified both at 23:46:49/23:46:51 ($0.0003 total); only the code was surfaced.
+Timeline: arrived 23:45 -> picked up by the next 60s poll 23:46:49 -> outbox email window (2 min) -> delivered 23:48:49 -> reply 23:48:53. ~3.5 min end to end.
+The agent flagged it as likely phishing (same personal sender as the injection email). Alert turn: 1 Sonnet call, $0.025 (cache expired after idle; 8.9k-token prompt).
+
+<agent_message timestamp="2026-10-14 23:48:49">Important email watcher notification: | A verification code email arrived at 11:45 PM from jane.doe@example.com, sent to your address. It contains the code 483218, which expires in 10 minutes. If you did not request a login or verification, do not share the code and check your account security.</agent_message>
+<poke_reply timestamp="2026-10-14 23:48:53">Heads up: another email came in at 11:45 PM with a verification code. It's from jane.doe@example.com, the same address as the shady "Quick question" email. A real login code wouldn't come from a personal Gmail address, so I'd treat it as phishing. Don't share the code or act on it unless you requested one. Mark it as spam. |  | Also, the Google alert about Composio access is still worth a look if you didn't authorize it.</poke_reply>

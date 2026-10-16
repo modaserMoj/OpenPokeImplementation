@@ -54,6 +54,12 @@ def now_in_user_timezone(fmt: Optional[str] = None, *, default: str = "UTC") -> 
     return current.strftime(fmt)
 
 
+def current_time_note() -> str:
+    """The user's current local time, for prompts: models have no clock of their own."""
+    now = now_in_user_timezone()
+    return f"{now.isoformat(timespec='seconds')} ({get_user_timezone_name()}, {now.strftime('%A')})"
+
+
 def convert_to_user_timezone(dt: datetime, *, default: str = "UTC") -> datetime:
     """Convert *dt* into the user's timezone with UTC fallback."""
 
@@ -74,6 +80,7 @@ def convert_to_user_timezone(dt: datetime, *, default: str = "UTC") -> datetime:
 
 __all__ = [
     "UTC",
+    "current_time_note",
     "convert_to_user_timezone",
     "get_user_timezone_name",
     "now_in_user_timezone",

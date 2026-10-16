@@ -1,0 +1,8 @@
+LIVE TEST 1: Gmail connection survives a server restart (2026-10-14 23:38) - PASSED
+Server restarted at ~23:37 (model switch); no reconnect; inbox search worked.
+Calls: main agent 2 (Sonnet 5.5), worker 2 (Sonnet 5.5), email search 2 (Haiku 5.5), 1 embedding; ~$0.062; ~15s end to end.
+
+<user_message timestamp="2026-10-14 23:38:10">who sent my latest email</user_message>
+<poke_reply timestamp="2026-10-14 23:38:14">Checking your inbox now.</poke_reply>
+<agent_message timestamp="2026-10-14 23:38:23">[SUCCESS] Latest Email Sender: The most recent email in the inbox that the user didn't send: |  | - **Sender name:** Google | - **Email address:** no-reply@accounts.google.com | - **Subject:** Security alert | - **Time received:** 2026-10-14 at 11:11 PM (23:11:09 -04:00, America/Toronto). That's about 27 minutes before the current time. | - **Content:** It's a notice that the user allowed Composio access to some of their Google Account data. It says
+<poke_reply timestamp="2026-10-14 23:38:25">Google (no-reply@accounts.google.com) sent your latest email, at 11:11 PM. It's a security alert saying Composio was given access to some of your Google Account data. If that wasn't you, check your account activity. The search only returned that one email, so I can't fully rule out a newer one.</poke_reply>

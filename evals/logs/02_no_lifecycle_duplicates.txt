@@ -1,0 +1,22 @@
+PROBLEM: No lifecycle: agents are never archived/merged/deleted; names are the only identity
+CLAIM:   Duplicates pile up; context splits across them.
+==============================================================================
+AgentRoster public API: ['add_agent', 'clear', 'get_agents', 'load', 'save']
+  -> no remove/archive/merge/rename/status. Only clear() (wipes everything).
+
+Roster after 5 phrasings of the same intent: ['Email to Alice', 'Alice reply', 'Alice follow-up', 'email to alice', 'Email to Alice!']
+Distinct log files on disk (slugified):
+  alice-follow-up.log
+  alice-reply.log
+  email-to-alice.log
+
+Slug collision: 'Email to Alice', 'email to alice', 'Email to Alice!' are 3 roster entries
+but share ONE log file -> history of distinct 'agents' silently merges on disk while the
+roster/LLM still treats them as different agents.
+
+Prompt contradiction (interaction_agent/system_prompt.md):
+  - - IMPORTANT: Your goal should be to use this tool in parallel as much as possible. If the user asks for a complicated task, split it into as much concurrent calls to `send_message_to_agent` as possibl
+  - - IMPORTANT: When using `send_message_to_agent`, always prefer to send messages to a relevant existing agent rather than starting a new one UNLESS the tasks can be accomplished in parallel. For instan
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     No removal/merge API; identity = free text; slug collision creates silent aliasing.

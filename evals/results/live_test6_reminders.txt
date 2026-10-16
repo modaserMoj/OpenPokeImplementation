@@ -1,0 +1,17 @@
+LIVE TEST 6: two reminders 'at the same time' (2026-10-15 00:02-00:05) - NOT COMBINED (two messages, 10 s apart)
+The requests were sent 16 s apart, so the reminders were due 00:04:41 and 00:04:51; they fired in different 10 s scheduler polls (00:04:44, 00:04:54) and the second result reached the outbox exactly as the first one's 10 s reminder window closed.
+Each fired 3 s after its due time; delivered ~18 s after due (10 s window + model reply). The earlier live test with identical due times WAS combined.
+Possible fix (not applied): when a reminder fires, also fire reminders due within the next 15 s.
+
+<user_message timestamp="2026-10-15 00:02:35">remind me in 2 minutes to stretch</user_message>
+<poke_reply timestamp="2026-10-15 00:02:41">Setting it up. Stretch nudge in 2 minutes.</poke_reply>
+<agent_message timestamp="2026-10-15 00:02:48">[SUCCESS] Stretch Reminder: The one-time "Time to stretch!" reminder is set (trigger ID 6). It's active and doesn't repeat. |  | It will fire at 2026-10-15 00:04:41 America/Toronto (EDT, UTC-4). That is 2026-10-15T04:04:41Z in UTC, 2 minutes after the s
+<poke_reply timestamp="2026-10-15 00:02:51">Stretch nudge is set for 12:04 AM, one-time. Dinner draft to mod16 (7 PM) is still unsent, so reply "yes" if you want it out.</poke_reply>
+<user_message timestamp="2026-10-15 00:02:51">remind me in two minutes to check my watch</user_message>
+<poke_reply timestamp="2026-10-15 00:02:55">On it, watch nudge in two minutes.</poke_reply>
+<agent_message timestamp="2026-10-15 00:03:00">[SUCCESS] Watch Reminder: I created the one-time reminder "Check your watch!" with trigger ID 7. It has no recurrence and is active. |  | - **Fires at:** 2026-10-15 00:04:51 America/Toronto (EDT, -04:00) | - **In UTC:** 2026-10-15T04:04:51Z</agent_messa
+<poke_reply timestamp="2026-10-15 00:03:02">Watch nudge is set for 12:04 AM, one-time. The 7 PM dinner draft to mod16 is still unsent, so reply "yes" if you want it out.</poke_reply>
+<agent_message timestamp="2026-10-15 00:04:56">[SUCCESS] Stretch Reminder: Trigger ID 6, the "Time to stretch!" reminder, fired at 2026-10-15T04:04:44Z (00:04:44 America/Toronto). It was scheduled for 04:04:41Z. Please tell the user: "Time to stretch!" |  | The trigger was one-time with no recurrenc
+<poke_reply timestamp="2026-10-15 00:04:59">Time to stretch!</poke_reply>
+<agent_message timestamp="2026-10-15 00:05:06">[SUCCESS] Watch Reminder: Trigger 7 fired, so this is the "Check your watch!" reminder for Poke to pass on to the user. |  | - **Scheduled time:** 2026-10-15 00:04:51 America/Toronto (04:04:51Z) | - **Fired at:** 2026-10-15 00:04:54 America/Toronto (04:
+<poke_reply timestamp="2026-10-15 00:05:09">Check your watch!</poke_reply>

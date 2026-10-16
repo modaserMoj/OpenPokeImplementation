@@ -1,0 +1,17 @@
+PROBLEM: Static findings: phantom tool, single model, no metrics, no tests
+CLAIM:   
+==============================================================================
+Interaction tools defined: ['send_draft', 'send_message_to_agent', 'send_message_to_user', 'wait']
+Prompt mentions `reacttomessage`: True; defined: False
+
+Configured models: {'interaction_agent_model': 'anthropic/claude-sonnet-4', 'execution_agent_model': 'anthropic/claude-sonnet-4', 'execution_agent_search_model': 'anthropic/claude-sonnet-4', 'summarizer_model': 'anthropic/claude-sonnet-4', 'email_classifier_model': 'anthropic/claude-sonnet-4'}
+  -> all five roles use the same model; no per-role tiering.
+
+grep for usage/latency/cost accounting in server/: 1 hit(s)
+   server/agents/execution_agent/batch_manager.py:156:                "elapsed_seconds": (datetime.now() - pending.created_at).total_seconds(),
+  (request_chat_completion returns raw JSON; nothing reads 'usage' or times calls)
+
+Test files in repo (excluding node_modules/baseline): 0
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Phantom tool in prompt, one model everywhere, no usage/latency tracking, zero tests.

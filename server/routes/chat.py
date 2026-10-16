@@ -23,26 +23,40 @@ def chat_history() -> ChatHistoryResponse:
 
 
 @router.delete("/history", response_model=ChatHistoryClearResponse)
-def clear_history() -> ChatHistoryClearResponse:
-    from ..services import get_execution_agent_logs, get_agent_roster
+def clear_history(everything: bool = False) -> ChatHistoryClearResponse:
+    """Clear the chat transcript (and the drafts shown in it, which can no longer be approved). Agents, their memory,
+    stored results and reminders are KEPT: before, this also
+    deleted every agent and every reminder (and missed newer stores, leaving orphaned files).
 
-    # Clear conversation log
+    `?everything=true` is an explicit full reset that clears every store consistently."""
     log = get_conversation_log()
     log.clear()
+    # Drafts shown in the cleared chat are no longer visible, so they must not be approvable: a later "yes" would
+    # otherwise send an email the user can no longer see (found in live test 7).
+    from ..services.approvals import get_approval_store
 
-    # Clear execution agent logs
-    execution_logs = get_execution_agent_logs()
-    execution_logs.clear_all()
-
-    # Clear agent roster
-    roster = get_agent_roster()
-    roster.clear()
-
-    # Clear stored triggers
-    trigger_service = get_trigger_service()
-    trigger_service.clear_all()
-
+    get_approval_store().clear()
+    if everything:
+        _reset_everything()
     return ChatHistoryClearResponse()
+
+
+def _reset_everything() -> None:
+    import shutil
+
+    from ..services import get_agent_roster, get_execution_agent_logs
+    from ..services.approvals import get_approval_store
+
+    logs = get_execution_agent_logs()
+    logs.clear_all()
+    base = logs._base_dir
+    for pattern in ("*.memory.json", "embeddings_*.json"):
+        for path in base.glob(pattern):
+            path.unlink(missing_ok=True)
+    shutil.rmtree(base / "results", ignore_errors=True)
+    get_agent_roster().clear()
+    get_trigger_service().clear_all()
+    get_approval_store().clear()
 
 
 __all__ = ["router"]

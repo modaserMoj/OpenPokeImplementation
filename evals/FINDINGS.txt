@@ -1,0 +1,99 @@
+OpenPoke baseline findings (pre-fix), 2026-10-12
+=================================================
+Method: real server code, scripted fake LLM, faked Gmail layer, throwaway data dir.
+Reproduce: python evals/run_baseline.py   (writes evals/logs/*.txt)
+No real LLM or Gmail was used, so latency/cost numbers below are code-path
+measurements, not model measurements. Token counts are chars/4 estimates.
+
+Every claim in the earlier write-up was reproduced. Items marked NEW were
+found while building the probes.
+
+ID  SEV   LOG                          FINDING
+--  ----  ---------------------------  -------------------------------------------------
+01  HIGH  01_roster_prompt             Roster = list[str]. Whole list in every turn:
+                                       10 agents ~109 tok, 200 ~1.4k, 1000 ~6.6k per turn.
+02  HIGH  02_no_lifecycle_duplicates   No remove/archive/merge/rename API (only clear()).
+                                       Prompt says both "prefer existing agent" and
+                                       "split into as many parallel calls as possible".
+NEW 02  MED   02_no_lifecycle_duplicates   Slug collision: "Email to Alice",
+                                       "email to alice", "Email to Alice!" are 3 roster
+                                       entries but ONE log file.
+03  HIGH  03_history_growth            Whole log in system prompt: 1 run ~1k tok,
+                                       50 runs ~11k tok (one small tool call per run).
+                                       Tool result 9194 chars stored as 519 (cut mid-JSON).
+NEW 03  LOW   03_history_growth        The instruction is recorded to the log before the
+                                       run, so it appears in the system prompt AND as the
+                                       user message.
+04  MED   04_attention_fanout          5 simultaneous triggers -> 5 interaction turns /
+                                       5 user messages; same 5 via one manager -> 1 turn.
+                                       Watcher: 1 classifier call per email + 1 interaction
+                                       turn per important email; no digest or cap.
+05  MED   05_batching_concurrency      Fast agent (0.1s) result waited 1.9s for slow agent
+                                       (2s); in prod the wait can be 90s. Two concurrent
+                                       runs of one agent: no lock, B never sees A's result.
+06  CRIT  06_send_guard                Hijacked execution LLM sent reply, send-draft and
+                                       forward with no code gate (3/3 executed).
+NEW 06  CRIT  06_send_guard            gmail_reply_to_thread and gmail_forward_email send
+                                       immediately; the "create draft first" rule does not
+                                       apply to them at all.
+07  MED   07_windows_fcntl             `import server.app` fails without fcntl.
+NEW 08  MED   08_roster_truncation     save() opens with 'w' before locking; if the lock is
+                                       busy the file stays EMPTY, next load() -> [] and
+                                       every agent is forgotten.
+                                       (low likelihood in single-process use: needs a second
+                                       process or a failed write; impact is total and silent)
+09  LOW   09_bad_json_args             Bad JSON args -> {} -> misleading "missing
+                                       positional arguments" error to the model.
+10  LOW   10_static_findings           Prompt references nonexistent `reacttomessage`;
+                                       one model for all 5 roles; no usage/latency
+                                       tracking; 0 test files.
+
+Not covered by an offline probe (needs a real model): routing accuracy, reply
+quality, true cost/latency. Those belong to the eval harness built in the fix phase.
+
+Proposed fix order (all unit-testable on a mocked LLM):
+  1. Send guard in code (06)             - safety, small
+  2. Roster -> registry w/ metadata, atomic cross-platform writes, lock (01,02,07,08)
+  3. Retrieval routing + lifecycle + merge (01,02)
+  4. Per-agent compaction, stop truncating tool output blindly (03)
+  5. Per-agent serialisation, shared dispatcher with coalescing window (04,05)
+  6. Small stuff (09, 10, duplicated request)
+  7. Eval harness: simulated 300-agent history, labeled requests, before/after
+
+Found while getting the app running (fixed in place, 2026-10-12)
+----------------------------------------------------------------
+NEW  HIGH  Gmail connect broken: client.py used connected_accounts.initiate(), which
+           Composio retired for managed OAuth configs (400). Fixed: use link().
+NEW  MED   No max_tokens on LLM requests -> OpenRouter asks for the 64k model max and
+           returns 402 unless the balance covers it. Fixed: default cap 2048
+           (OPENPOKE_MAX_TOKENS to override).
+NEW  LOW   Interaction-agent failures log only "Interaction agent failed"; the error is in
+           logging `extra`, which the log format never prints, so the cause was invisible.
+NEW  MED   Active Gmail user id is held only in process memory (client.py
+           _ACTIVE_USER_ID). A server restart silently disconnects Gmail while the
+           browser still shows "connected" (localStorage). Tools then fail with
+           "Gmail not connected".
+NEW  MED   When the interaction agent's LLM call fails, the user gets no message at all
+           (turn just fails; error only in server log). Seen twice with 402s.
+NEW  LOW   Duplicate draft shown to user: send_draft() posts the draft as a chat message,
+           then the prompt-mandated send_message_to_user() repeated the full draft again
+           (live, 2026-10-13 00:11). Prompt never says "don't repeat the draft"; no code dedupe.
+NEW  MED   No retry/backoff on HTTP 429 from the LLM provider: a burst of ~20 calls/min
+           made every later call fail (seen in the eval harness; a live turn would just die
+           with no message to the user). Harness now retries; product code does not.
+
+Real-model routing baseline (results/baseline/summary.txt, 40 requests, 277-agent history)
+-----------------------------------------------------------------------------------------
+Routing ACCURACY is already high (95%); the cost of overload shows up elsewhere:
+  primary-agent hit rate   25%   threads split over 2-4 agents: 3 of 4 requests land on a
+                                 non-primary variant, i.e. context is scattered
+  prompt tokens/routing call 6,549 (277 agents; scales linearly with roster size)
+  cost/request $0.0227, latency p50 2.9s / p95 4.6s
+  indirect requests (by last name/topic, not agent name) 80%: misses are the metadata gap
+So the fix targets are: context fragmentation, prompt size/cost, indirect lookup, plus the
+safety and reliability findings above. Do NOT claim accuracy gains beyond ~5 points.
+
+Real-model prompt growth (results/cost_scaling_baseline/summary.txt, $0.195, 7 calls)
+  main agent, conversation history: 3,340 tok (0 msgs) -> 6,657 (50) -> 9,998 (100): $0.010 -> $0.030/turn
+  worker agent, own log:            3,532 tok (0 runs) -> 11,686 (20) -> 23,779 (50): $0.011 -> $0.072/call (6.7x)
+  (replaces the earlier fake-tool estimate of ~1k -> 11k tokens in logs/03)

@@ -1,0 +1,12 @@
+OpenPoke baseline (pre-fix) - offline, scripted fake LLM, real server code
+
+CONFIRMED      01_roster_prompt
+CONFIRMED      02_no_lifecycle_duplicates
+CONFIRMED      03_history_growth
+CONFIRMED      04_attention_fanout
+CONFIRMED      05_batching_concurrency
+CONFIRMED      06_send_guard
+CONFIRMED      07_windows_fcntl
+CONFIRMED      08_roster_truncation
+CONFIRMED      09_bad_json_args
+CONFIRMED      10_static_findings

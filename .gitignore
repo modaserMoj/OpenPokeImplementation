@@ -44,3 +44,9 @@ server/venv/
 # Generated documentation / analysis artifacts
 server/repomix-output.txt
 server/plans/
+
+# Tests
+.pytest_cache/
+
+# Local live-session logs and PIDs (contain real email contents; kept out of the repo)
+evals/runtime/

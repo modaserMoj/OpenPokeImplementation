@@ -1,0 +1,18 @@
+PROBLEM: No attention budget: every trigger / watcher alert becomes its own interaction turn + user message
+CLAIM:   Each trigger builds its own ExecutionBatchManager; nothing ranks, combines or rate-limits.
+==============================================================================
+5 triggers due in the same poll -> TriggerScheduler path: 5 separate interaction-agent turns
+   turn payload: [SUCCESS] Reminder 1: reminder done: Reminder 1
+   turn payload: [SUCCESS] Reminder 2: reminder done: Reminder 2
+   turn payload: [SUCCESS] Reminder 3: reminder done: Reminder 3
+   turn payload: [SUCCESS] Reminder 4: reminder done: Reminder 4
+   turn payload: [SUCCESS] Reminder 5: reminder done: Reminder 5
+Same 5 agents through ONE shared manager (the user-request path): 1 turn
+
+Email watcher (services/gmail/importance_watcher.py): inside _poll_once(), for every eligible email it
+awaits classify_email_importance() (1 LLM call per email, up to max_results=50) and then
+_dispatch_summary() -> InteractionAgentRuntime().handle_agent_message() (1 more LLM turn per important email).
+No digest, ranking, quiet hours, or per-hour cap exists anywhere.
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Fan-out is N turns/N user messages for N simultaneous background events; nothing coalesces across managers.

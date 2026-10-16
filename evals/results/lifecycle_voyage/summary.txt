@@ -1,0 +1,6 @@
+LIFECYCLE EVAL  label=voyage  model=voyageai/voyage-4-lite  agents=277  true duplicate pairs=180  creation cases=51  cost=$0.0001
+======================================================================================================================
+   settings                                             false merges precision  recall agents left  creation: reuse ok wrong reuse
+   defaults {"SAME_TOPIC_SIMILARITY": 0.55, "DIFFERENT_            0      100%     91%         175                 60%           0
+
+Creation check by case (defaults): new name, same thread 15/15, paraphrase, same thread 0/10, brand new 4/4, same topic, another person 16/16, same first name, another person 6/6

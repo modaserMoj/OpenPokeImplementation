@@ -1,0 +1,99 @@
+OpenPoke - all results in one place (2026-10-15)
+================================================
+Everything below is in evals/. "before" = original code, "after" = with all fixes. Numbers are measured.
+Real-model runs used OpenRouter; total spent on evals and live tests: roughly $3-4 (baseline + after runs + live sessions).
+
+START HERE
+  SUMMARY.txt        the problems found before fixing (issues 1-9, S1-S3), with costs
+  FINDINGS.txt       the full findings log, severities, bugs found while getting the app running
+  RESULTS.txt        this file: where every result is, and the headline before/after numbers
+  ../tests/README.md how the test suite and evaluators work
+
+1. TEST SUITE  (free, no network: python -m pytest)
+   results/tests_baseline/pytest_output.txt          before: 23 passed, 20 known bugs (expected failures)
+   results/tests_after_all_fixes/pytest_output.txt   after: 242 passed, 0 expected failures
+
+2. ROUTING EVAL  (real model; 40 labeled requests on a 277-agent history)   eval/run_eval.py, eval/compare.py
+   results/baseline/summary.txt    before, Sonnet 4
+   results/after_s4/summary.txt    after, Sonnet 4 (like for like)
+   results/after_s55/summary.txt   after, Sonnet 5.5 (the new default)
+
+                                      before (S4)   after (S4)   after (S5.5)
+     routing accuracy                    95.0%        95.0%        95.0%
+     primary-agent hit (context kept)    25.0%        80.0%        80.0%
+     wrong-reuse rate                     2.5%         0.0%         0.0%
+     duplicate-agent rate                 3.3%         6.7%         6.7%   (the 2 misses: surnames that
+                                                                           appear nowhere; before also failed them)
+     cost / request                     $0.0227      $0.0063      $0.0060   (-72%)
+     latency p50 / p95                 2.9s/4.6s    2.3s/3.4s    3.0s/5.8s
+   Paraphrased requests (14 that share no words with their agent):
+   results/para_baseline/summary.txt vs results/para_after_s4/summary.txt
+     accuracy 71.4% -> 92.9%, duplicate agents 4 -> 1, cost/request $0.0309 -> $0.0068
+
+3. RETRIEVAL EVAL  (embeddings only, ~$0.0001)   eval/retrieval_eval.py
+   results/retrieval_realistic/summary.txt   right thread on the list the main agent sees: 97.7% (paraphrases 93%)
+                                             agent list ~330 tokens instead of ~2,960 for every name
+   (retrieval_lexical, retrieval_compare, retrieval_compare2 used template descriptions that leak the answer;
+    kept for the record, superseded by retrieval_realistic)
+
+4. COST SCALING  (real tokens, no prompt cache = worst case)   eval/cost_scaling.py
+   results/cost_scaling_baseline/summary.txt  vs  results/cost_scaling_after_s4/summary.txt
+     worker prompt after 50 runs     23,779 -> 5,706 tokens   ($0.072 -> $0.017 per call)
+     main agent at 100 messages       9,998 -> 7,903 tokens   (and flat after that)
+     main agent, empty chat           3,340 -> 3,754 tokens   (+414: new send-guard and outbox instructions)
+
+5. AGENT LIFECYCLE  (duplicate merging; ~$0.0001)   eval/lifecycle_eval.py
+   results/lifecycle_words/summary.txt   words and people only: 0 wrong merges, 59% of duplicate pairs merged
+   results/lifecycle_voyage/summary.txt  with embeddings:       0 wrong merges, 91% merged, 277 -> 175 agents
+     creation check: same-person new names reused 15/15; 26/26 cases that must stay separate kept separate
+
+6. MEMORY  (does compaction keep what matters?)   eval/memory_eval.py
+   results/memory_offline_floor   summariser that keeps nothing: identifiers 4/4 kept (code), facts 0/5
+   results/memory_haiku           Haiku 5.5:   identifiers 4/4, facts 5/5, $0.0025 per compaction
+   results/memory_sonnet55        Sonnet 5.5:  identifiers 4/4, facts 5/5, $0.044
+     history in the prompt after 40 runs: ~12,970 -> ~1,400 tokens
+   Main agent chat summary (same idea for the chat; eval/chat_memory_eval.py, Haiku 5.5, 3 runs, $0.018):
+   results/chat_memory_haiku/summary.txt   520-message chat, summary rewritten 5 times per run
+     planted facts still visible: 27/27 (preference, ID, amount, rules, dates, person, open task) + update tracked
+     cancelled draft dropped from "Pending": 3/3; summary 278-318 words (limit ~500)
+     relative date ("tomorrow") never resolved: 0/3 - the summariser gets no message timestamps (original code)
+
+7. EMAIL IMPORTANCE CLASSIFIER  (20 labeled emails incl. 2 attacks)   eval/classifier_eval.py
+   results/classifier_compare/summary.txt
+     Sonnet 4, Haiku 5.5, Sonnet 5.5: all 100%, no misses, no false alarms, both attacks handled safely
+     cost: Haiku $0.0034 vs Sonnet 4 $0.0696 (20x cheaper), same latency
+
+8. OFFLINE PROBES OF THE ORIGINAL CODE  (real code, fake model)   run_baseline.py
+   logs/00_SUMMARY.txt and logs/01..10   one file per original problem
+   logs/11_live_trigger_trace.txt        first live reminder trace (before the fixes)
+
+9. LIVE TESTS IN THE REAL APP  (Sonnet 5.5 main agent and worker, Haiku for the rest)
+   results/live_smoke/                         caching works: 2nd call $0.0129 -> $0.0011
+   results/live_session_usage.jsonl            reminders session: 35 calls $0.20, 70% cached, 0 wasted final calls
+   results/live_test1_gmail_restart.txt        PASSED  Gmail stays connected across a restart
+   results/live_email_guard_attempt1..4.txt    FAILED attempts that found 6 bugs (all fixed, all with tests)
+   results/live_test2_draft_send.txt           PASSED  draft -> revise -> one "yes" -> sent once
+   results/live_test3_injection.txt            PASSED  injected email: nothing forwarded or sent
+   results/live_test4_watcher.txt              PASSED  verification code surfaced, newsletter ignored (~3.5 min)
+   results/live_test5_duplicates_try1/2.txt    no duplicates created; the creation check was not triggered live
+   results/live_test6_reminders.txt            NOT combined when due 10 s apart (combined when due together)
+   results/live_test7_clear_history.txt        PASSED  chat cleared, agents/reminders kept (+ gap fixed)
+   (the merged log of all live sessions, runtime/events.log, is kept local: it holds real email contents;
+    real addresses in the files above were replaced with placeholders)
+
+   Bugs found by live testing (each fixed and covered by a test):
+     1. workers had no current time (my regression)        5. Composio "error": null treated as failure
+     2. merged agents hid their people from the model      6. approval needed for self-written drafts
+     3. Haiku's hidden reasoning truncated summaries       7. revisions left old drafts pending / containment match
+     4. "send <name>" cue missing, surname matching        8. approved draft created but never sent
+                                                            9. trailing period on emails; drafts approvable after clear
+
+KNOWN OPEN ITEMS
+  - reminders due a few seconds apart are delivered separately (optional 15 s look-ahead not applied)
+  - the chat summary keeps unsent drafts as "pending", so the agent keeps mentioning them
+  - the creation-time duplicate check is proven offline only
+  - Sonnet 5.5 vs Sonnet 4 for the main agent: same routing quality, same cost, slower in one run
+  - no reply-quality judge eval
+  - the chat summariser gets no message timestamps, so "tomorrow" stays "tomorrow" (reminders are unaffected:
+    they are stored with exact times)
+  - superseded: results/phase3 (a partial routing run stopped before the fixes; not used)

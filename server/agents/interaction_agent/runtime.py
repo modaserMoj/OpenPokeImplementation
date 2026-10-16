@@ -4,9 +4,10 @@ import json
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Set
 
-from .agent import build_system_prompt, prepare_message_with_history
+from .agent import build_system_prompt, prepare_message_with_history, render_active_agents
 from .tools import ToolResult, get_tool_schemas, handle_tool_call
 from ...config import get_settings
+from ...services.approvals import begin_turn, current_turn, end_turn, get_approval_store, is_send_confirmation
 from ...services.conversation import get_conversation_log, get_working_memory_log
 from ...openrouter_client import request_chat_completion
 from ...logging_config import logger
@@ -65,13 +66,16 @@ class InteractionAgentRuntime:
     async def execute(self, user_message: str) -> InteractionResult:
         """Handle a user-authored message."""
 
+        turn = begin_turn("user", user_message)  # approvals only count when the USER started the turn
         try:
             transcript_before = self._load_conversation_transcript()
             self.conversation_log.record_user_message(user_message)
 
             system_prompt = build_system_prompt()
             messages = prepare_message_with_history(
-                user_message, transcript_before, message_type="user"
+                user_message, transcript_before, message_type="user",
+                active_agents=await render_active_agents(user_message),
+                notes=self._approve_if_user_confirmed(user_message),
             )
 
             logger.info("Processing user message through interaction agent")
@@ -89,24 +93,29 @@ class InteractionAgentRuntime:
             )
 
         except Exception as exc:
-            logger.error("Interaction agent failed", extra={"error": str(exc)})
+            logger.error("Interaction agent failed: %s", exc, extra={"error": str(exc)})
+            self._tell_user_it_failed(user_message)
             return InteractionResult(
                 success=False,
                 response="",
                 error=str(exc),
             )
+        finally:
+            end_turn(turn)
 
     # Handle incoming messages from execution agents and generate appropriate responses
     async def handle_agent_message(self, agent_message: str) -> InteractionResult:
         """Process a status update emitted by an execution agent."""
 
+        turn = begin_turn("agent", agent_message)  # approvals only count when the USER started the turn
         try:
             transcript_before = self._load_conversation_transcript()
             self.conversation_log.record_agent_message(agent_message)
 
             system_prompt = build_system_prompt()
             messages = prepare_message_with_history(
-                agent_message, transcript_before, message_type="agent"
+                agent_message, transcript_before, message_type="agent",
+                active_agents=await render_active_agents(agent_message),
             )
 
             logger.info("Processing execution agent results")
@@ -124,12 +133,15 @@ class InteractionAgentRuntime:
             )
 
         except Exception as exc:
-            logger.error("Interaction agent (agent message) failed", extra={"error": str(exc)})
+            logger.error("Interaction agent (agent message) failed: %s", exc, extra={"error": str(exc)})
+            self._tell_user_it_failed(agent_message)
             return InteractionResult(
                 success=False,
                 response="",
                 error=str(exc),
             )
+        finally:
+            end_turn(turn)
 
     # Core interaction loop that handles LLM calls and tool executions until completion
     async def _run_interaction_loop(
@@ -163,8 +175,11 @@ class InteractionAgentRuntime:
             if not parsed_tool_calls:
                 break
 
+            batch_names: List[str] = []
+            batch_failed = False
             for tool_call in parsed_tool_calls:
                 summary.tool_names.append(tool_call.name)
+                batch_names.append(tool_call.name)
 
                 if tool_call.name == "send_message_to_agent":
                     agent_name = tool_call.arguments.get("agent_name")
@@ -172,6 +187,7 @@ class InteractionAgentRuntime:
                         summary.execution_agents.add(agent_name)
 
                 result = self._execute_tool(tool_call)
+                batch_failed = batch_failed or not result.success
 
                 if result.user_message:
                     summary.user_messages.append(result.user_message)
@@ -182,6 +198,9 @@ class InteractionAgentRuntime:
                     "content": self._format_tool_result(tool_call, result),
                 }
                 messages.append(tool_message)
+
+            if self._turn_is_done(batch_names, batch_failed, summary):
+                break  # nothing more to decide: skip the extra full-prompt call that would return nothing
         else:
             raise RuntimeError("Reached tool iteration limit without final response")
 
@@ -190,10 +209,66 @@ class InteractionAgentRuntime:
 
         return summary
 
+    # A clear "yes"/"send" from the user approves the draft they were just shown - in code, before the model runs
+    def _approve_if_user_confirmed(self, user_message: str) -> Optional[str]:
+        """Live testing showed the model sometimes skipped approve_send or asked again, so the user had to confirm
+        several times. Now the code records the approval itself and tells the model it is done."""
+        if not is_send_confirmation(user_message):
+            return None
+        proposal, reason = get_approval_store().approve()
+        if proposal is None:
+            if reason.startswith("More than one draft"):
+                return f"<approval_note>The user said yes, but {reason}</approval_note>"
+            return None
+        return (
+            "<approval_note>The user just APPROVED this exact email - approval is already recorded, do NOT ask "
+            f"again and do not call approve_send. To: {', '.join(proposal.recipients)}. Subject: {proposal.subject}. "
+            f"Text: {proposal.body}\nNow tell the agent \"The user approved this exact email: send it now\" with exactly "
+            "this recipient, subject and text (it creates the draft first if needed), and tell the user it is "
+            "being sent.</approval_note>"
+        )
+
+    # Leave a visible note when a turn fails, so the user is never left waiting in silence
+    def _tell_user_it_failed(self, trigger_text: str) -> None:
+        """A failed user turn gets an apology; a failed task-result turn says the result was not processed.
+        Background alerts (the email watcher) stay quiet so an outage does not spam the user."""
+        text = (trigger_text or "").lstrip()
+        if text.startswith("[") or text.startswith("Several updates arrived together"):  # worker results
+            note = "A task I started has finished, but I couldn't write up the result just now. Ask me again and I'll check."
+        elif text.startswith("Important email watcher"):
+            return
+        else:
+            note = "Sorry, I hit a problem and couldn't finish that. Please try again in a moment."
+        try:
+            self.conversation_log.record_reply(note)
+        except Exception as exc:  # pragma: no cover - defensive
+            logger.error("Could not record the failure notice: %s", exc)
+
+    # Decide whether the model has anything left to do after this batch of tool calls
+    @staticmethod
+    def _turn_is_done(batch_names: List[str], batch_failed: bool, summary: _LoopSummary) -> bool:
+        """True when another model call could not add anything.
+
+        The model is called again only if it may still have something to do: a tool failed (it must react),
+        an approval was granted (the send comes next), or it has only acknowledged the user (it may still be
+        about to delegate). The turn ends after `wait`, or once the user has been told AND the work is either
+        already delegated or was only a result being relayed."""
+        if batch_failed or "approve_send" in batch_names:
+            return False
+        if set(batch_names) == {"wait"}:
+            return True
+        if "send_message_to_user" not in batch_names:
+            return False
+        turn = current_turn()
+        relaying_a_result = turn is not None and turn.origin == "agent"
+        return relaying_a_result or "send_message_to_agent" in summary.tool_names
+
     # Load conversation history, preferring summarized version if available
     def _load_conversation_transcript(self) -> str:
         if self.settings.summarization_enabled:
-            rendered = self.working_memory_log.render_transcript()
+            rendered = self.working_memory_log.render_transcript(
+                budget_chars=self.settings.conversation_history_budget_chars
+            )
             if rendered.strip():
                 return rendered
         return self.conversation_log.load_transcript()
@@ -216,6 +291,7 @@ class InteractionAgentRuntime:
             system=system_prompt,
             api_key=self.api_key,
             tools=self.tool_schemas,
+            cache=True,  # system prompt + tools, and this turn's opening message, are reused by the next calls
         )
 
     # Extract the assistant's message from the OpenRouter API response structure
@@ -387,7 +463,10 @@ class InteractionAgentRuntime:
         if detail:
             log_payload.update(detail)
 
-        if stage == "done":
+        if stage == "done" and result is not None and not result.success:
+            # Refusals (e.g. approve_send) used to be invisible in the log; the reason is what you need to debug.
+            logger.warning(f"Tool '{tool_call.name}' refused: {str(result.payload)[:300]}")
+        elif stage == "done":
             logger.info(f"Tool '{tool_call.name}' completed")
         elif stage in {"error", "rejected"}:
             logger.warning(f"Tool '{tool_call.name}' {stage}")

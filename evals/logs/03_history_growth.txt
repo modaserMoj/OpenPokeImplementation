@@ -1,0 +1,21 @@
+PROBLEM: Execution-agent history is unbounded and lossy
+CLAIM:   Whole log goes into system prompt (conversation_limit=None); tool results cut to 500 chars.
+==============================================================================
+ runs so far |  system prompt chars |  ~tokens
+           1 |                 3868 |      967
+           5 |                 7168 |     1792
+          10 |                11293 |     2823
+          25 |                23668 |     5917
+          50 |                44293 |    11073
+
+Real tool payload: 9194 chars. Stored in agent log: 519 chars (result cap 500, args cap 200).
+  stored tail: ...'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, {"id": "m4", "subject": "Subject 4'
+  -> agent 'remembers' a cut-off JSON blob: memory is both bloated (whole log in prompt) and lossy.
+
+Duplicated instruction: send_message_to_agent() calls record_request() BEFORE the run,
+then the runtime loads that same log into the system prompt AND sends the instruction as
+the user message. Occurrences of the instruction text in the first run's system prompt:
+  1  (and it is also messages[0] of that call)
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Prompt size grows linearly per run with no compaction; tool results truncated; request double-injected.

@@ -1,0 +1,6 @@
+CLASSIFIER EVAL  label=compare  emails=20 (10 important, 8 not, 2 attacks)
+============================================================================================
+   model                              accuracy  missed  false alarms  attacks safe      cost  latency
+   anthropic/claude-sonnet-4              100%       0             0           2/2$   0.0696     1.7s
+   anthropic/claude-haiku-5.5             100%       0             0           2/2$   0.0034     1.8s
+   anthropic/claude-sonnet-5.5            100%       0             0           2/2$   0.0561     2.0s

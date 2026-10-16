@@ -1,0 +1,15 @@
+LIVE TEST 2: draft -> revise -> one 'yes' -> sent once (2026-10-14 23:39, Sonnet 5.5) - PASSED
+Revision ('include a joke') was not treated as approval; one 'yes' approved in code (approval_note), worker created + sent the draft, Gmail labelled it SENT; approvals store empty afterwards (nothing pending).
+Calls: 10, $0.107. Remaining blemish: the reply still mentions old unsent drafts from chat memory (they cannot be sent; code retired them).
+
+<user_message timestamp="2026-10-14 23:39:25">email jane.doe@example.com that we celebrate jame's birthday tomorrow</user_message>
+<poke_reply timestamp="2026-10-14 23:39:29">To: jane.doe@example.com | Subject: Celebrating Jame's birthday tomorrow |  | Hi, we're celebrating Jame's birthday tomorrow.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:39:29">Draft's above. Nothing's sent yet. Reply "yes" to send, or tell me what to change.</poke_reply>
+<user_message timestamp="2026-10-14 23:39:35">include a joke after brithday related</user_message>
+<poke_reply timestamp="2026-10-14 23:39:37">To: jane.doe@example.com | Subject: Celebrating Jame's birthday tomorrow |  | Hi, we're celebrating Jame's birthday tomorrow. |  | Why did the birthday cake go to the doctor? Because it was feeling crumby.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:39:37">Joke added. Nothing's sent yet. Reply "yes" to send, or tell me what to change.</poke_reply>
+<wait timestamp="2026-10-14 23:39:38">Draft with joke shown; awaiting user's confirmation.</wait>
+<user_message timestamp="2026-10-14 23:39:43">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:39:45">Sending it now. I'll confirm once it's actually out.</poke_reply>
+<agent_message timestamp="2026-10-14 23:39:55">[SUCCESS] Email to Jane: The email went out to jane.doe@example.com. Gmail labelled it SENT. |  | - **Draft ID:** r8836001928871900093 (created, then sent) | - **Sent message ID:** 1a13da517750a869 | - **To:** jane.doe@example.com | - **Subject:** Celebrating Jame's birthday tomorrow | - **Body:** |   Hi, we're celebrating Jame's birthday
+<poke_reply timestamp="2026-10-14 23:39:57">Sent. The birthday note (joke included) is in jane.doe@example.com's inbox, and Gmail shows it in your sent folder. The john.roe 3 PM draft and the older "Now at 3 PM" draft are still unsent.</poke_reply>

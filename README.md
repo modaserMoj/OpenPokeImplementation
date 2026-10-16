@@ -73,10 +73,25 @@ OpenPoke is a simplified, open-source take on [Interaction Company’s](https://
 
 The web app proxies API calls to the Python server using the values in `.env`, so keeping both processes running is required for end-to-end flows.
 
+## Take-home: what changed and how it was verified
+This fork fixes agent overload and cost problems in the original OpenPoke. Start with:
+- [`evals/SUMMARY.txt`](evals/SUMMARY.txt) – the problems found in the original code
+- [`evals/FIXES.txt`](evals/FIXES.txt) – the fix for each one, its measured impact, and why
+- [`evals/RESULTS.txt`](evals/RESULTS.txt) – every before/after number and where it comes from
+
+Run the test suite (free, no network, about 25 seconds):
+```bash
+pip install -r tests/requirements.txt
+python -m pytest
+```
+The evaluators that call real models are in `evals/eval/` (each has a spending cap); see [`evals/README.txt`](evals/README.txt) and [`tests/README.md`](tests/README.md).
+
 ## Project Layout
 - `server/` – FastAPI application and agents
 - `web/` – Next.js app
 - `server/data/` – runtime data (ignored by git)
+- `tests/` – the test suite (model and Gmail faked)
+- `evals/` – findings, evaluators, and all results
 
 ## License
 MIT — see [LICENSE](LICENSE).

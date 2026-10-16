@@ -1,0 +1,15 @@
+PROBLEM: Server cannot import on Windows
+CLAIM:   roster.py imports fcntl (Unix only).
+==============================================================================
+Simulated by blocking the fcntl module, then `import server.app`:
+    from ...services.execution import get_agent_roster
+  File "/home/user/general magic take home/OpenPoke/server/services/execution/__init__.py", line 4, in <module>
+    from .roster import AgentRoster, get_agent_roster
+  File "/home/user/general magic take home/OpenPoke/server/services/execution/roster.py", line 4, in <module>
+    import fcntl
+ModuleNotFoundError: import of fcntl halted; None in sys.modules
+
+Also: roster.save() opens the file with mode 'w' (truncating it) BEFORE taking the lock; see problem 08.
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Import of server.app fails when fcntl is absent.

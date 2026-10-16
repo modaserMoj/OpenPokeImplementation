@@ -1,0 +1,83 @@
+{
+  "summariser": "anthropic/claude-haiku-5.5",
+  "messages": 520,
+  "summary_rounds": 5,
+  "history_chars_without_summary": 61615,
+  "agent_view_chars": 8576,
+  "summary_words": 316,
+  "summary_chars": 2091,
+  "facts": [
+    {
+      "turn": 1,
+      "fact": "user is vegetarian",
+      "kind": "preference",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 3,
+      "fact": "flight confirmation code QX7P2M",
+      "kind": "identifier",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 5,
+      "fact": "offsite budget $12,500",
+      "kind": "amount",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 7,
+      "fact": "nothing before 10am",
+      "kind": "standing rule",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 9,
+      "fact": "always cc Priya on lease emails",
+      "kind": "standing rule",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 11,
+      "fact": "dentist 2026-11-04 15:00",
+      "kind": "dated commitment",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 13,
+      "fact": "Leila's birthday 2026-12-03",
+      "kind": "person detail",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 15,
+      "fact": "renew passport (expires 2026-12-15)",
+      "kind": "open task",
+      "kept": true,
+      "in_summary": true
+    },
+    {
+      "turn": 16,
+      "fact": "call landlord tomorrow 14:00",
+      "kind": "relative date",
+      "kept": false,
+      "in_summary": false
+    },
+    {
+      "turn": 40,
+      "fact": "offsite moved to Porto",
+      "kind": "updated fact",
+      "kept": true,
+      "in_summary": true
+    }
+  ],
+  "cancelled_draft_still_pending": false,
+  "cost_usd": 0.0061975
+}

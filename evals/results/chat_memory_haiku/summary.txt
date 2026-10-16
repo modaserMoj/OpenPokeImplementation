@@ -1,0 +1,27 @@
+CHAT MEMORY EVAL (main agent)  label=haiku  summariser: anthropic/claude-haiku-5.5  runs: 3
+==============================================================================
+chat: 520 messages, facts planted in the first 40 turns; summariser run after every message (as the app does)
+summary rewrites per run: 5, 5, 5
+history if never summarised: 61,615 chars (~17,437 tokens)
+what the agent sees at the end: 7,660, 8,576, 9,026 chars
+
+Facts still visible to the main agent (kept in N of the runs):
+   3/3  [preference] user is vegetarian
+   3/3  [identifier] flight confirmation code QX7P2M
+   3/3  [amount] offsite budget $12,500
+   3/3  [standing rule] nothing before 10am
+   3/3  [standing rule] always cc Priya on lease emails
+   3/3  [dated commitment] dentist 2026-11-04 15:00
+   3/3  [person detail] Leila's birthday 2026-12-03
+   3/3  [open task] renew passport (expires 2026-12-15)
+   0/3  [relative date] call landlord tomorrow 14:00
+   3/3  [updated fact] offsite moved to Porto
+   total: 27/30 (90%)
+
+Summary length (prompt asks for under ~500 words; code caps at 5,000 chars):
+   words: 278, 316, 318   chars: 1826, 2091, 2105
+
+Cancelled draft (to Marco) still listed under Pending: 0/3 runs
+
+cost: $0.0183 total, $0.0061 per run
+Per-run files: run<N>/final_summary.txt, agent_view.txt, summary.json, llm_usage.jsonl

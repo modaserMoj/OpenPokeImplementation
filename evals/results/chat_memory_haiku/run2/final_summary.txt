@@ -1,0 +1,29 @@
+Summary generated: Unknown (logs contain no timestamps) (user timezone)
+
+Timeline & Commitments:
+- 2026-11-04 15:00 — Dentist appointment with Dr. Okafor. Status: confirmed (saved).
+- 2026-11-12 07:40 — Flight to Lisbon, confirmation code QX7P2M. Status: booked. May need changing because the offsite moved to Porto.
+- 2026-12-03 — Sister Leila's birthday. Status: gift not yet chosen.
+- Date not logged — Team offsite in Porto (changed from Lisbon), budget cap $12,500. Status: location change confirmed.
+
+Pending & Follow-ups:
+- Due before 2026-12-03 — Buy birthday gift for Leila. Owner: user. Status: open, no gift chosen.
+- Due before 2026-12-15 — Renew passport (expires 2026-12-15) ahead of January trip. Owner: user. Status: open, no renewal started per logs.
+- Date not logged — Review flight QX7P2M (2026-11-12) against the Porto offsite location. Status: open.
+- "Tomorrow 14:00" (date unresolvable, no reference date logged) — Call landlord about broken heater. Status: reminder set; heater repair pending.
+
+Routines & Recurring:
+- Always — Do not schedule anything before 10:00.
+- Always — Cc Priya on all emails about the apartment lease.
+- Always — Restaurant bookings must be vegetarian-friendly.
+
+Preferences & Profile:
+- Vegetarian.
+- Enjoys long-form audio for long drives: narrative history, long-form interviews, or audio drama, preferably episodes over an hour.
+- Lives in a leased apartment; heater repair pending with landlord.
+
+Context & Notes:
+- Team offsite is in Porto (latest update, replacing Lisbon), budget cap $12,500.
+- Gym membership: user decided to keep it. The draft cancellation email to Marco (marco@gymflex.test) was dropped and must not be sent.
+- Relative times such as "tomorrow" cannot be converted to dates because no reference date was logged.
+- Recent logs contain only repeated general-knowledge Q&A (basil storage, VPN, cat names, curry recipe, Celsius-Fahrenheit conversion, podcasts, Roth vs. traditional IRA, lower-back stretches, green tea, Hamlet summary). These add no new commitments or personal details beyond the podcast preference.

@@ -1,0 +1,79 @@
+<conversation_summary>Summary generated: Unknown (logs contain no timestamps) (user timezone)
+
+Timeline &amp; Commitments:
+- 2026-11-04 15:00 — Dentist appointment with Dr. Okafor. Status: confirmed (saved).
+- 2026-11-12 07:40 — Flight to Lisbon, confirmation code QX7P2M. Status: booked. May need changing because the offsite moved to Porto.
+- 2026-12-03 — Sister Leila's birthday. Status: gift not yet chosen.
+- Date not logged — Team offsite in Porto (changed from Lisbon), budget cap $12,500. Status: location change confirmed.
+
+Pending &amp; Follow-ups:
+- Due before 2026-12-03 — Buy birthday gift for Leila. Owner: user. Status: open, no gift chosen.
+- Due before 2026-12-15 — Renew passport (expires 2026-12-15) ahead of January trip. Owner: user. Status: open, no renewal started per logs.
+- Date not logged — Review flight QX7P2M (2026-11-12) against the Porto offsite location. Status: open.
+- "Tomorrow 14:00" (date unresolvable, no reference date logged) — Call landlord about broken heater. Status: reminder set; heater repair pending.
+
+Routines &amp; Recurring:
+- Always — Do not schedule anything before 10:00.
+- Always — Cc Priya on all emails about the apartment lease.
+- Always — Restaurant bookings must be vegetarian-friendly.
+
+Preferences &amp; Profile:
+- Vegetarian.
+- Enjoys long-form audio for long drives: narrative history, long-form interviews, or audio drama, preferably episodes over an hour.
+- Lives in a leased apartment; heater repair pending with landlord.
+
+Context &amp; Notes:
+- Team offsite is in Porto (latest update, replacing Lisbon), budget cap $12,500.
+- Gym membership: user decided to keep it. The draft cancellation email to Marco (marco@gymflex.test) was dropped and must not be sent.
+- Relative times such as "tomorrow" cannot be converted to dates because no reference date was logged.
+- Recent logs contain only repeated general-knowledge Q&amp;A (basil storage, VPN, cat names, curry recipe, Celsius-Fahrenheit conversion, podcasts, Roth vs. traditional IRA, lower-back stretches, green tea, Hamlet summary). These add no new commitments or personal details beyond the podcast preference.</conversation_summary>
+<user_message timestamp="2026-10-16 00:35:36">How long should I steep green tea?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:36">Two to three minutes at around 80°C; longer or hotter makes it bitter.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:36">Summarise the plot of Hamlet in two lines.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:36">Prince Hamlet seeks revenge on his uncle Claudius, who murdered Hamlet's father and married his mother. His hesitation leads to a chain of deaths, including his own.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:36">What's a good way to keep basil fresh?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:36">Trim the stems and keep it in a glass of water on the counter, loosely covered with a bag - not in the fridge, which blackens the leaves.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:36">ok cool</user_message>
+<poke_reply timestamp="2026-10-16 00:35:36">👍</poke_reply>
+<user_message timestamp="2026-10-16 00:35:36">Explain what a VPN does in simple terms.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:36">It creates an encrypted tunnel between your device and a server, so your network provider sees only that you're connected to the VPN, not which sites you visit.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Suggest a name for a grey cat.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Smokey, Ash, Pebble, Earl Grey, or Mochi.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">What's a quick dinner idea tonight?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">How about a chickpea and spinach curry? About 25 minutes with canned chickpeas, coconut milk, spinach and a spoon of curry paste; serve with rice or naan.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Can you remind me how to convert 180C to Fahrenheit?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">180°C is 356°F: multiply by 9/5 and add 32.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Any podcast recommendations for a long drive?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Try a narrative history show, a long-form interview podcast, or an audio drama; pick something with episodes over an hour so you aren't switching constantly.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">What's the difference between a Roth and a traditional IRA, briefly?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Roth: you pay tax now, withdrawals in retirement are tax-free. Traditional: contributions may be deductible now, withdrawals are taxed later.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Thanks, that helps.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Anytime!</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Give me three stretches for lower back pain.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Child's pose, knee-to-chest, and cat-cow. Hold each for about 30 seconds, breathe slowly, and stop if anything hurts sharply.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">How long should I steep green tea?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Two to three minutes at around 80°C; longer or hotter makes it bitter.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Summarise the plot of Hamlet in two lines.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Prince Hamlet seeks revenge on his uncle Claudius, who murdered Hamlet's father and married his mother. His hesitation leads to a chain of deaths, including his own.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">What's a good way to keep basil fresh?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Trim the stems and keep it in a glass of water on the counter, loosely covered with a bag - not in the fridge, which blackens the leaves.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">ok cool</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">👍</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Explain what a VPN does in simple terms.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">It creates an encrypted tunnel between your device and a server, so your network provider sees only that you're connected to the VPN, not which sites you visit.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Suggest a name for a grey cat.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Smokey, Ash, Pebble, Earl Grey, or Mochi.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">What's a quick dinner idea tonight?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">How about a chickpea and spinach curry? About 25 minutes with canned chickpeas, coconut milk, spinach and a spoon of curry paste; serve with rice or naan.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Can you remind me how to convert 180C to Fahrenheit?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">180°C is 356°F: multiply by 9/5 and add 32.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Any podcast recommendations for a long drive?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Try a narrative history show, a long-form interview podcast, or an audio drama; pick something with episodes over an hour so you aren't switching constantly.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">What's the difference between a Roth and a traditional IRA, briefly?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Roth: you pay tax now, withdrawals in retirement are tax-free. Traditional: contributions may be deductible now, withdrawals are taxed later.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Thanks, that helps.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Anytime!</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">Give me three stretches for lower back pain.</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Child's pose, knee-to-chest, and cat-cow. Hold each for about 30 seconds, breathe slowly, and stop if anything hurts sharply.</poke_reply>
+<user_message timestamp="2026-10-16 00:35:42">How long should I steep green tea?</user_message>
+<poke_reply timestamp="2026-10-16 00:35:42">Two to three minutes at around 80°C; longer or hotter makes it bitter.</poke_reply>

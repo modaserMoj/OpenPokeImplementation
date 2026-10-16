@@ -1,0 +1,64 @@
+{
+  "label": "lexical",
+  "requests": 44,
+  "agents": 277,
+  "recall_at": {
+    "3": {
+      "all": 0.6818181818181818,
+      "dup_trap": 1.0,
+      "exact": 1.0,
+      "indirect": 1.0,
+      "paraphrase": 0.0
+    },
+    "5": {
+      "all": 0.6818181818181818,
+      "dup_trap": 1.0,
+      "exact": 1.0,
+      "indirect": 1.0,
+      "paraphrase": 0.0
+    },
+    "10": {
+      "all": 0.6818181818181818,
+      "dup_trap": 1.0,
+      "exact": 1.0,
+      "indirect": 1.0,
+      "paraphrase": 0.0
+    },
+    "20": {
+      "all": 0.6818181818181818,
+      "dup_trap": 1.0,
+      "exact": 1.0,
+      "indirect": 1.0,
+      "paraphrase": 0.0
+    }
+  },
+  "shipped": {
+    "recall": 0.6818181818181818,
+    "dup_trap": 1.0,
+    "exact": 1.0,
+    "indirect": 1.0,
+    "paraphrase": 0.0,
+    "primary_agent_on_list": 0.6818181818181818,
+    "avg_agents_shown": 11.386363636363637,
+    "agent_list_chars_full_roster_names_only": 10367,
+    "agent_list_chars_shipped": 1677,
+    "agent_list_tokens_est_full": 2962,
+    "agent_list_tokens_est_shipped": 479,
+    "missed": [
+      "para-01: can you check on getting my travel document renewed",
+      "para-02: any progress on the medical coverage reimbursement?",
+      "para-03: how is the cooking area renovation going",
+      "para-04: follow up on the computer guarantee coverage",
+      "para-05: sort out my vehicle licence for this year",
+      "para-06: where are we on restructuring my home loan",
+      "para-07: did anyone confirm the shingles checkup",
+      "para-08: look into the airline ticket to Portugal",
+      "para-09: get an update on the photovoltaic panel estimate",
+      "para-10: what do I need to do about the court summons",
+      "para-11: book the shots for my dog",
+      "para-12: plan the long distance race preparation this week",
+      "para-13: has the adjustable workstation purchase shipped",
+      "para-14: ask about the warehouse locker rental"
+    ]
+  }
+}

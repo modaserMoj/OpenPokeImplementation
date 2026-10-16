@@ -1,0 +1,20 @@
+LIVE TRACE: email send guard, attempt 3 - approval WORKED, but the email was never sent
+Cause: the worker created the approved draft but did not send it (tool note said 'needs confirmation'; worker prompt says never send without it); a second yes found nothing awaiting approval and was refused.
+Fix: tool note says 'already approved: send now'; worker prompt sends on relayed approval; repeated yes on an approved-unsent draft succeeds; refusal reasons now logged.
+
+<user_message timestamp="2026-10-14 23:22:59">create an email to jane.doe@example.com that the meeting moved to 3 pm</user_message>
+<poke_reply timestamp="2026-10-14 23:23:04">To: jane.doe@example.com | Subject: Meeting moved to 3 PM |  | Meeting's moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:23:04">Fresh draft above, same short version you picked. Nothing's gone out yet. Reply "yes" to send.</poke_reply>
+<user_message timestamp="2026-10-14 23:23:14">make it shorter</user_message>
+<poke_reply timestamp="2026-10-14 23:23:17">To: jane.doe@example.com | Subject: Meeting moved to 3 PM |  | Now at 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:23:17">Can't get much shorter than that. Send it?</poke_reply>
+<wait timestamp="2026-10-14 23:23:18">Shorter draft shown; awaiting user's confirmation.</wait>
+<user_message timestamp="2026-10-14 23:23:22">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:23:29">Sending it now.</poke_reply>
+<agent_message timestamp="2026-10-14 23:23:37">[SUCCESS] Email to Jane Doe: I created the draft but haven't sent it. It needs the user's confirmation first. |  | - **Draft ID:** r4319890347794595797 | - **To:** jane.doe@example.
+<poke_reply timestamp="2026-10-14 23:23:42">To: jane.doe@example.com | Subject: Meeting moved to 3 PM |  | Now at 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:23:42">Jumped the gun saying it was sending. It's not out yet. Reply "yes" once more and it goes.</poke_reply>
+<user_message timestamp="2026-10-14 23:23:50">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:23:57">To: jane.doe@example.com | Subject: Meeting moved to 3 PM |  | Now at 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:23:57">The system didn't register your last yes, so this is the draft again. Reply "yes" once more and I'll send it.</poke_reply>
+<wait timestamp="2026-10-14 23:24:03">Draft shown; awaiting user's yes.</wait>

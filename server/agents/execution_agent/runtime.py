@@ -1,5 +1,6 @@
 """Simplified Execution Agent Runtime."""
 
+import asyncio
 import inspect
 import json
 from typing import Dict, Any, List, Optional, Tuple
@@ -10,6 +11,10 @@ from .tools import get_tool_schemas, get_tool_registry
 from ...config import get_settings
 from ...openrouter_client import request_chat_completion
 from ...logging_config import logger
+from ...utils.timezones import current_time_note
+from ...services.execution import memory
+
+INVALID_ARGUMENTS = "__invalid_arguments__"
 
 
 @dataclass
@@ -44,10 +49,14 @@ class ExecutionAgentRuntime:
         """Execute the agent with given instructions."""
         try:
             # Build system prompt with history
-            system_prompt = self.agent.build_system_prompt_with_history()
+            system_prompt = self.agent.build_system_blocks()  # [base prompt, memory], cached separately
+            # Recorded after the prompt is built, so the request is not also in the history it is sent with.
+            self.agent.record_request(instructions)
 
             # Start conversation with the instruction
-            messages = [{"role": "user", "content": instructions}]
+            # The worker needs "now" to turn "in 3 minutes" into a start time. (It used to read it off the request's
+            # log timestamp in its history - which a brand-new agent does not have.)
+            messages = [{"role": "user", "content": f"{instructions}\n\n(Current time for the user: {current_time_note()})"}]
             tools_executed: List[str] = []
             final_response: Optional[str] = None
 
@@ -94,6 +103,18 @@ class ExecutionAgentRuntime:
                         messages.append(tool_message)
                         continue
 
+                    if isinstance(tool_args, dict) and INVALID_ARGUMENTS in tool_args:
+                        problem = tool_args[INVALID_ARGUMENTS]
+                        logger.warning(f"[{self.agent.name}] Tool {tool_name} called with bad arguments: {problem}")
+                        self.agent.record_tool_execution(tool_name, "(arguments were not valid JSON)", problem)
+                        failure = {"error": f"{problem}. The tool was NOT run. Call it again with complete, valid JSON arguments."}
+                        messages.append({
+                            "role": "tool",
+                            "tool_call_id": call_id or tool_name,
+                            "content": self._format_tool_result(tool_name, False, failure, {}),
+                        })
+                        continue
+
                     tools_executed.append(tool_name)
                     logger.info(f"[{self.agent.name}] Executing tool: {tool_name}")
 
@@ -127,6 +148,7 @@ class ExecutionAgentRuntime:
                 raise RuntimeError("LLM did not return a final response")
 
             self.agent.record_response(final_response)
+            memory.schedule_compaction(self.agent.name)
 
             return ExecutionResult(
                 agent_name=self.agent.name,
@@ -149,7 +171,7 @@ class ExecutionAgentRuntime:
             )
 
     # Execute OpenRouter API call with system prompt, messages, and optional tool schemas
-    async def _make_llm_call(self, system_prompt: str, messages: List[Dict], with_tools: bool) -> Dict:
+    async def _make_llm_call(self, system_prompt, messages: List[Dict], with_tools: bool) -> Dict:
         """Make an LLM call."""
         tools_to_send = self.tool_schemas if with_tools else None
         logger.info(f"[{self.agent.name}] Calling LLM with model: {self.model}, tools: {len(tools_to_send) if tools_to_send else 0}")
@@ -158,7 +180,8 @@ class ExecutionAgentRuntime:
             messages=messages,
             system=system_prompt,
             api_key=self.api_key,
-            tools=tools_to_send
+            tools=tools_to_send,
+            cache=True,  # the base prompt and this run's memory stay the same across the run's calls
         )
 
     # Parse and validate tool calls from LLM response into structured format
@@ -174,8 +197,10 @@ class ExecutionAgentRuntime:
             if isinstance(args, str):
                 try:
                     args = json.loads(args) if args else {}
-                except json.JSONDecodeError:
-                    args = {}
+                except json.JSONDecodeError as exc:
+                    args = {INVALID_ARGUMENTS: f"invalid json: {exc}"}  # reported to the model, not hidden
+            if not isinstance(args, dict):
+                args = {INVALID_ARGUMENTS: "arguments must be a JSON object"}
 
             if name:
                 tool_calls.append({
@@ -228,9 +253,14 @@ class ExecutionAgentRuntime:
             return False, {"error": f"Unknown tool: {tool_name}"}
 
         try:
-            result = tool_func(**arguments)
-            if inspect.isawaitable(result):
-                result = await result
+            if inspect.iscoroutinefunction(tool_func):
+                result = await tool_func(**arguments)
+            else:
+                # Synchronous tools (Gmail via the Composio SDK, the trigger database) run on a worker thread, so
+                # a slow network call no longer freezes every other agent, the outbox and the web requests.
+                result = await asyncio.to_thread(tool_func, **arguments)
+                if inspect.isawaitable(result):
+                    result = await result
             return True, result
         except Exception as e:
             return False, {"error": str(e)}

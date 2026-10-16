@@ -1,0 +1,63 @@
+{
+  "label": "offline_floor",
+  "summariser": "keeps nothing (floor)",
+  "runs": 40,
+  "compaction_rounds": 1,
+  "history_chars_before": 45828,
+  "history_chars_after": 3651,
+  "history_tokens_est_before": 12969,
+  "history_tokens_est_after": 1033,
+  "retention": {
+    "identifier": 1.0,
+    "summary-only fact": 0.0
+  },
+  "facts": [
+    {
+      "kind": "identifier",
+      "fact": "Draft saved for the lease renewal, draft_id=r8553019871675242050.",
+      "kept": true
+    },
+    {
+      "kind": "identifier",
+      "fact": "Found the lease thread, thread_id=19a2f0c3d4e5b6a7.",
+      "kept": true
+    },
+    {
+      "kind": "identifier",
+      "fact": "Reminder created to chase the deposit, trigger_id=7.",
+      "kept": true
+    },
+    {
+      "kind": "identifier",
+      "fact": "Dana's new address is dana.cruz@newco.test (old one bounces).",
+      "kept": true
+    },
+    {
+      "kind": "summary-only fact",
+      "fact": "Dana said she prefers meetings on Tuesday afternoons.",
+      "kept": false
+    },
+    {
+      "kind": "summary-only fact",
+      "fact": "The invoice total Dana confirmed is $4,180.",
+      "kept": false
+    },
+    {
+      "kind": "summary-only fact",
+      "fact": "The user rejected the first draft because it was too formal.",
+      "kept": false
+    },
+    {
+      "kind": "summary-only fact",
+      "fact": "The lease renewal deadline is November 30.",
+      "kept": false
+    },
+    {
+      "kind": "summary-only fact",
+      "fact": "The user asked to always cc Priya on lease emails.",
+      "kept": false
+    }
+  ],
+  "summariser_calls": 0,
+  "summariser_cost_usd": 0
+}

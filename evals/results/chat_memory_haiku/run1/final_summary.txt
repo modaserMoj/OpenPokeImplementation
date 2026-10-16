@@ -1,0 +1,25 @@
+Summary generated: Not determinable (logs contain no timestamps) (user timezone unknown)
+
+Timeline & Commitments:
+- 2026-11-04 15:00 — Dentist appointment with Dr. Okafor. Status: confirmed (saved).
+- 2026-11-12 07:40 — Flight to Lisbon, confirmation code QX7P2M. Status: booked. May conflict with the Porto offsite; confirm whether it needs changing.
+- 2026-12-03 (time not given) — Sister Leila's birthday. Status: gift pending.
+- 2026-12-15 (deadline) — Passport expires. Renewal must be completed before this date, ahead of a January trip (exact trip date not given).
+
+Pending & Follow-ups:
+- Tomorrow, 14:00 (date unresolved) — Call landlord about the broken heater. Owner: user. Status: reminder set. Next step: make the call.
+- Before 2026-12-03 — Buy a gift for sister Leila. Owner: user. Status: open; gift ideas were offered.
+- Before 2026-12-15 — Renew passport before the January trip. Owner: user. Status: open.
+- Undated — Plan the team offsite in Porto (moved from Lisbon). Hard budget cap: $12,500. Owner: user. Status: open. Next step: confirm whether the 2026-11-12 Lisbon flight needs changing.
+
+Routines & Recurring:
+- Daily — Standing order: never schedule anything before 10:00.
+
+Preferences & Profile:
+- Vegetarian. Restaurant and meal suggestions must be vegetarian-friendly.
+- Always cc Priya on emails about the apartment lease.
+
+Context & Notes:
+- Offsite location changed from Lisbon to Porto. The Lisbon flight remains booked and may need changing.
+- Gym membership is being kept. The draft cancellation email to Marco (marco@gymflex.test) was dropped and not sent.
+- Logs 196–474 contain only repeated general Q&A (unit conversion, podcasts, Roth vs. traditional IRA, stretches, green tea, Hamlet, basil, VPN, cat names, dinner ideas). They add no new commitments, deadlines, or personal details.

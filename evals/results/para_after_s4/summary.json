@@ -1,0 +1,33 @@
+{
+  "label": "para_after_s4",
+  "dataset_sha": "para-68ac164f",
+  "requests": 14,
+  "api_errors_excluded": 0,
+  "rate_limit_retries": 0,
+  "roster_size": 277,
+  "accuracy": 0.9285714285714286,
+  "accuracy_with_duplicate_check": 0.9285714285714286,
+  "reuse_recall": 0.9285714285714286,
+  "duplicate_agent_rate": 0.07142857142857142,
+  "fragmented_requests": 3,
+  "primary_hit_rate": 1.0,
+  "wrong_reuse_rate": 0.0,
+  "no_route_rate": 0.0,
+  "by_category": {
+    "paraphrase": 0.9285714285714286
+  },
+  "outcomes": {
+    "correct_reuse": 13,
+    "correct_new": 0,
+    "missed_reuse": 1,
+    "wrong_reuse": 0,
+    "no_route": 0
+  },
+  "prompt_tokens_first_call_avg": 4257.571428571428,
+  "prompt_tokens_per_request_avg": 4257.571428571428,
+  "llm_calls_per_request_avg": 1,
+  "cost_usd_per_request_avg": 0.0067682571428571425,
+  "cost_usd_total": 0.0947556,
+  "latency_s_per_request_p50": 2.49,
+  "latency_s_per_request_p95": 3.298
+}

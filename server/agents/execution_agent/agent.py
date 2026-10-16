@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from ...services.execution import get_execution_agent_logs
+from ...services.execution import memory
 from ...logging_config import logger
 
 
@@ -59,41 +60,20 @@ class ExecutionAgent:
             agent_purpose=agent_purpose
         )
 
-    # Combine base system prompt with conversation history, applying conversation limits
+    # Combine base system prompt with the agent's bounded memory (summary + identifiers + recent runs)
+    def build_system_blocks(self) -> List[str]:
+        """[stable base prompt, this agent's memory]: two blocks so each can be cached on its own."""
+        history = memory.render_history(self.name)
+        blocks = [self.build_system_prompt()]
+        if history:
+            blocks.append(f"# Execution History\n\n{history}")
+        return blocks
+
     def build_system_prompt_with_history(self) -> str:
-        """
-        Build system prompt including agent history.
+        """System prompt plus the agent's memory, never more than memory.HISTORY_BUDGET_CHARS of history.
 
-        Returns:
-            System prompt with embedded history transcript
-        """
-        base_prompt = self.build_system_prompt()
-
-        # Load history transcript
-        transcript = self._log_store.load_transcript(self.name)
-
-        if transcript:
-            # Apply conversation limit if needed
-            if self.conversation_limit and self.conversation_limit > 0:
-                # Parse entries and limit them
-                lines = transcript.split('\n')
-                request_count = sum(1 for line in lines if '<agent_request' in line)
-
-                if request_count > self.conversation_limit:
-                    # Find where to cut
-                    kept_requests = 0
-                    cutoff_index = len(lines)
-                    for i in range(len(lines) - 1, -1, -1):
-                        if '<agent_request' in lines[i]:
-                            kept_requests += 1
-                            if kept_requests == self.conversation_limit:
-                                cutoff_index = i
-                                break
-                    transcript = '\n'.join(lines[cutoff_index:])
-
-            return f"{base_prompt}\n\n# Execution History\n\n{transcript}"
-
-        return base_prompt
+        The full log stays on disk; see server/services/execution/memory.py."""
+        return "\n\n".join(self.build_system_blocks())
 
     # Format current instruction as user message for LLM consumption
     def build_messages_for_llm(self, current_instruction: str) -> List[Dict[str, str]]:
@@ -110,14 +90,16 @@ class ExecutionAgent:
             {"role": "user", "content": current_instruction}
         ]
 
+    # Log the request this run is answering (once, by the run itself, so reminder runs are recorded too)
+    def record_request(self, instructions: str) -> None:
+        self._log_store.record_request(self.name, instructions)
+
     # Log the agent's final response to the execution log store
     def record_response(self, response: str) -> None:
         """Record agent's response to the log."""
         self._log_store.record_agent_response(self.name, response)
 
-    # Log tool invocation and results with truncated content for readability
-    def record_tool_execution(self, tool_name: str, arguments: str, result: str) -> None:
-        """Record tool execution details."""
-        self._log_store.record_action(self.name, f"Calling {tool_name} with: {arguments[:200]}")
-        # Record the tool response
-        self._log_store.record_tool_response(self.name, tool_name, result[:500])
+    # Log a tool call: full arguments, a digest of the result, the full result kept in a side file
+    def record_tool_execution(self, tool_name: str, arguments: str, result: str) -> str:
+        """Record tool execution details. Returns the stored result id ('' when the result was short)."""
+        return memory.record_tool_call(self.name, tool_name, arguments, result)

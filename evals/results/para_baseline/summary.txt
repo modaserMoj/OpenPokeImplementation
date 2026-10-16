@@ -1,0 +1,33 @@
+ROUTING EVAL  label=para_baseline  dataset=para-68ac164f  requests=14  roster=277 agents   (api errors excluded: 0, 429 retries: 0)
+======================================================================
+accuracy                  71.4%   (right agent reused, or new agent when none fits)
+  + duplicate check       71.4%   (new names caught by the check behind the model: 0)
+reuse recall              71.4%   (existing thread -> right agent)
+duplicate-agent rate      28.6%   (existing thread -> NEW agent created)
+primary-agent hit rate   33.3%   (thread split over 2-4 agents -> went to the one holding the main history; 3 requests)
+wrong-reuse rate           0.0%   (sent to an unrelated agent)
+no-route rate              0.0%   (never called send_message_to_agent)
+
+accuracy by category:
+  paraphrase  71.4%
+
+prompt tokens, 1st call   avg 6543
+prompt tokens / request   avg 9410   (1.4 LLM calls)
+cost / request            $0.0309   total $0.432
+latency / request         p50 3.8s   p95 5.4s
+
+per-request outcomes (id, outcome, routed-to):
+  para-01      correct_reuse  Passport renewal
+  para-02      correct_reuse  Health insurance claim follow-up
+  para-03      correct_reuse  Check kitchen remodel
+  para-04      correct_reuse  Check laptop warranty
+  para-05      missed_reuse   Vehicle license renewal 2025
+  para-06      correct_reuse  Mortgage refinance
+  para-07      correct_reuse  Check roof inspection
+  para-08      correct_reuse  Flight to Lisbon follow-up
+  para-09      correct_reuse  Solar quote follow-up
+  para-10      missed_reuse   Court summons research
+  para-11      missed_reuse   Dog vaccination booking
+  para-12      correct_reuse  Marathon training
+  para-13      correct_reuse  Check standing desk order
+  para-14      missed_reuse   Warehouse locker rental inquiry

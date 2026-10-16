@@ -1,0 +1,3 @@
+LIVE TEST 7: Clear history (2026-10-15 ~00:07) - PASSED, with one gap found and fixed
+Chat emptied (UI 0 messages, summary reset). Kept: 9 agents, 12 agent logs, memory, stored results, 7 reminder rows.
+Gap: the dinner draft to mod16, shown in the cleared chat, was still approvable for 30 min - a later 'yes' could have sent an email the user could no longer see. Fix: clearing the chat also clears pending drafts/approvals (test in tests/test_persistence.py).

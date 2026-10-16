@@ -1,0 +1,344 @@
+{
+  "label": "compare2",
+  "agents": 277,
+  "requests": 44,
+  "configs": {
+    "words only": {
+      "recall_at": {
+        "3": {
+          "all": 0.6818181818181818,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.0
+        },
+        "5": {
+          "all": 0.6818181818181818,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.0
+        },
+        "10": {
+          "all": 0.6818181818181818,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.0
+        }
+      },
+      "shipped": {
+        "all": 0.6818181818181818,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 0.0
+      },
+      "primary_agent_on_list": 0.6818181818181818,
+      "missed": [
+        "para-01",
+        "para-02",
+        "para-03",
+        "para-04",
+        "para-05",
+        "para-06",
+        "para-07",
+        "para-08",
+        "para-09",
+        "para-10",
+        "para-11",
+        "para-12",
+        "para-13",
+        "para-14"
+      ]
+    },
+    "semantic voyage-4-lite": {
+      "recall_at": {
+        "3": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        },
+        "5": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        },
+        "10": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        }
+      },
+      "shipped": {
+        "all": 1.0,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 1.0
+      },
+      "primary_agent_on_list": 1.0,
+      "missed": []
+    },
+    "hybrid w=1.0  voyage-4-lite": {
+      "recall_at": {
+        "3": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        },
+        "5": {
+          "all": 0.9772727272727273,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.9285714285714286
+        },
+        "10": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        }
+      },
+      "shipped": {
+        "all": 1.0,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 1.0
+      },
+      "primary_agent_on_list": 1.0,
+      "missed": []
+    },
+    "hybrid w=0.5  voyage-4-lite": {
+      "recall_at": {
+        "3": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        },
+        "5": {
+          "all": 0.9772727272727273,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.9285714285714286
+        },
+        "10": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        }
+      },
+      "shipped": {
+        "all": 1.0,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 1.0
+      },
+      "primary_agent_on_list": 1.0,
+      "missed": []
+    },
+    "hybrid w=0.25 voyage-4-lite": {
+      "recall_at": {
+        "3": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        },
+        "5": {
+          "all": 0.9772727272727273,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.9285714285714286
+        },
+        "10": {
+          "all": 1.0,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 1.0
+        }
+      },
+      "shipped": {
+        "all": 1.0,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 1.0
+      },
+      "primary_agent_on_list": 1.0,
+      "missed": []
+    },
+    "semantic pplx-embed-v1-0.6b": {
+      "recall_at": {
+        "3": {
+          "all": 0.9318181818181818,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.7857142857142857
+        },
+        "5": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        },
+        "10": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        }
+      },
+      "shipped": {
+        "all": 0.9545454545454546,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 0.8571428571428571
+      },
+      "primary_agent_on_list": 0.9545454545454546,
+      "missed": [
+        "para-04",
+        "para-14"
+      ]
+    },
+    "hybrid w=1.0  pplx-embed-v1-0.6b": {
+      "recall_at": {
+        "3": {
+          "all": 0.8863636363636364,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.6428571428571429
+        },
+        "5": {
+          "all": 0.9090909090909091,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.7142857142857143
+        },
+        "10": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        }
+      },
+      "shipped": {
+        "all": 0.9545454545454546,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 0.8571428571428571
+      },
+      "primary_agent_on_list": 0.9545454545454546,
+      "missed": [
+        "para-04",
+        "para-14"
+      ]
+    },
+    "hybrid w=0.5  pplx-embed-v1-0.6b": {
+      "recall_at": {
+        "3": {
+          "all": 0.8863636363636364,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.6428571428571429
+        },
+        "5": {
+          "all": 0.9090909090909091,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.7142857142857143
+        },
+        "10": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        }
+      },
+      "shipped": {
+        "all": 0.9545454545454546,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 0.8571428571428571
+      },
+      "primary_agent_on_list": 0.9545454545454546,
+      "missed": [
+        "para-04",
+        "para-14"
+      ]
+    },
+    "hybrid w=0.25 pplx-embed-v1-0.6b": {
+      "recall_at": {
+        "3": {
+          "all": 0.8863636363636364,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.6428571428571429
+        },
+        "5": {
+          "all": 0.9090909090909091,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.7142857142857143
+        },
+        "10": {
+          "all": 0.9545454545454546,
+          "dup_trap": 1.0,
+          "exact": 1.0,
+          "indirect": 1.0,
+          "paraphrase": 0.8571428571428571
+        }
+      },
+      "shipped": {
+        "all": 0.9545454545454546,
+        "dup_trap": 1.0,
+        "exact": 1.0,
+        "indirect": 1.0,
+        "paraphrase": 0.8571428571428571
+      },
+      "primary_agent_on_list": 0.9545454545454546,
+      "missed": [
+        "para-04",
+        "para-14"
+      ]
+    }
+  },
+  "agent_list_tokens_est": {
+    "every_name": 2962,
+    "shipped": 386
+  }
+}

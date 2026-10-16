@@ -1,0 +1,30 @@
+Summary generated: Not stated in logs (user timezone not specified)
+
+Timeline & Commitments:
+- 2026-11-04 15:00: Dentist appointment with Dr. Okafor. Status: confirmed (saved).
+- 2026-11-12 07:40: Flight to Lisbon, confirmation code QX7P2M. Status: booked, but may be affected by the offsite move to Porto; logs don't confirm.
+- 2026-12-03: Sister Leila's birthday. Gift pending.
+- Date unanchored, "tomorrow" at 14:00: Call landlord about broken heater. Status: reminder set.
+- January, exact date not given: Trip. Passport must be valid for it.
+- Date not given: Team offsite in Porto (moved from Lisbon). Status: planning; no bookings recorded.
+
+Pending & Follow-ups:
+- Due 2026-12-03: Buy birthday gift for sister Leila. Owner: user. Status: open. Next step: assistant can suggest ideas.
+- Due before 2026-12-15: Renew passport (current expiry 2026-12-15) before the January trip. Owner: user. Status: open. Next step: start renewal.
+- Date unanchored, "tomorrow" at 14:00: Call landlord about broken heater. Owner: user. Status: reminder set. Next step: make the call.
+- Date not given: Plan team offsite in Porto. Budget hard cap $12,500. Owner: user. Status: planning. Next step: decide whether to keep or rebook the Lisbon flight (QX7P2M, 2026-11-12).
+
+Routines & Recurring:
+- No items.
+
+Preferences & Profile:
+- Vegetarian. Restaurant suggestions must be vegetarian-friendly.
+- Never schedule anything before 10:00.
+- Always cc Priya on emails about the apartment lease.
+- Long drives: prefers podcasts with episodes over an hour.
+
+Context & Notes:
+- Offsite moved from Lisbon to Porto; the 2026-11-12 Lisbon flight remains booked and its status is unclear.
+- Gym membership: user decided to keep it. Draft cancellation email to marco@gymflex.test was not sent; no action needed.
+- Apartment: broken heater needs landlord follow-up (14:00 call).
+- Recent logs contain only general Q&A (basil storage, VPN, cat names, curry recipe, Celsius-Fahrenheit conversion, podcasts, Roth vs traditional IRA, back stretches, green tea, Hamlet summary). They add no new commitments, deadlines, or preferences.

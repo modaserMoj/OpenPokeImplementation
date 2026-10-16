@@ -1,0 +1,22 @@
+COST SCALING  label=baseline  model=anthropic/claude-sonnet-4  spent=$0.195
+==========================================================================
+A. MAIN AGENT prompt vs conversation history (roster empty; system prompt + tools + history)
+   messages  prompt chars   tokens    cost/turn @ $3/M in
+          0        12,688    3,340       $  0.0100
+         10        14,524    4,116 (est) $  0.0123
+         25        17,754    5,032 (est) $  0.0151
+         50        23,471    6,657       $  0.0200
+         75        28,386    8,045 (est) $  0.0241
+        100        34,392    9,998       $  0.0300
+
+   tokens/char from real calls: 0.283  (est rows use this ratio)
+   Summarisation compacts history only after 100 messages (conversation_summary_threshold).
+
+B. WORKER AGENT prompt vs number of prior runs in its own log
+   prior runs  system chars   tokens    cost/call @ $3/M in
+            0         3,768     3532   $  0.0106
+            5        10,069     5568   $  0.0167
+           20        29,267    11686   $  0.0351
+           50        67,021    23779   $  0.0713
+
+   worker prompt grew 6.7x (3,532 -> 23,779 tokens) over 50 runs

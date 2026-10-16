@@ -1,0 +1,21 @@
+PROBLEM: Single global batch: slow agent delays everyone; concurrent runs of one agent interleave
+CLAIM:   One slow agent holds back every result (up to 90s); two simultaneous calls to the same agent both run.
+==============================================================================
+A) fast agent (0.1s) + slow agent (2.0s) in the same batch:
+   fast agent finished at t=0.10s
+   user-facing dispatch happened at t=2.00s  (fast result waited 1.90s)
+   In production 'slow' can be up to timeout_seconds=90 -> ~90s of silence for finished work.
+
+B) two simultaneous requests to the SAME agent 'Email to Alice':
+   LLM calls: 4 (4 = 2 runs x 2 steps; both ran in parallel, no per-agent lock/queue)
+   Run B's system prompt contains run A's answer? False  (B loaded history before A wrote anything)
+   Resulting shared log (entries from both runs interleaved):
+     <agent_action> Calling gmail_list_drafts with: {}
+     <tool_response> gmail_list_drafts: {"drafts": []}
+     <agent_action> Calling gmail_list_drafts with: {}
+     <tool_response> gmail_list_drafts: {"drafts": []}
+     <agent_response> answer to: TASK-A: draft intro
+     <agent_response> answer to: TASK-B: draft apology
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     No per-agent serialisation; batch dispatch waits for slowest member.

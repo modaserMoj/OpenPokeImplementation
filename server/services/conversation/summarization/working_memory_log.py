@@ -178,25 +178,44 @@ class WorkingMemoryLog:
                     except Exception:  # pragma: no cover - defensive cleanup
                         pass
 
-    def render_transcript(self, state: Optional[SummaryState] = None) -> str:
+    def render_transcript(self, state: Optional[SummaryState] = None, budget_chars: Optional[int] = None) -> str:
+        """Summary + unsummarised messages. With `budget_chars`, never longer than that: the newest messages are
+        kept and the oldest left out (they are about to be summarised), with a note saying so."""
         snapshot = state or self.load_summary_state()
         parts: List[str] = []
 
         summary_text = (snapshot.summary_text or "").strip()
         if summary_text:
+            if budget_chars is not None:
+                summary_text = summary_text[: budget_chars // 2]
             safe_summary = escape(summary_text, quote=False)
             parts.append(f"<conversation_summary>{safe_summary}</conversation_summary>")
 
+        rendered_entries = []
         for entry in snapshot.unsummarized_entries:
             safe_payload = escape(entry.payload, quote=False)
             if entry.timestamp:
-                parts.append(
-                    f'<{entry.tag} timestamp="{entry.timestamp}">{safe_payload}</{entry.tag}>'
-                )
+                rendered_entries.append(f'<{entry.tag} timestamp="{entry.timestamp}">{safe_payload}</{entry.tag}>')
             else:
-                parts.append(f'<{entry.tag}>{safe_payload}</{entry.tag}>')
+                rendered_entries.append(f'<{entry.tag}>{safe_payload}</{entry.tag}>')
 
-        return '\n'.join(parts)
+        if budget_chars is not None:
+            room = budget_chars - sum(len(p) + 1 for p in parts) - 120
+            kept: List[str] = []
+            for line in reversed(rendered_entries):
+                if len(line) + 1 > room:
+                    if not kept:  # the latest message alone is too long: keep its end
+                        kept.append("… " + line[-max(room - 2, 0):])
+                    break
+                kept.append(line)
+                room -= len(line) + 1
+            kept.reverse()
+            omitted = len(rendered_entries) - len(kept)
+            if omitted:
+                parts.append(f"<note>{omitted} older messages are not shown here; they are being summarised.</note>")
+            rendered_entries = kept
+
+        return '\n'.join(parts + rendered_entries)
 
     def clear(self) -> None:
         with self._lock:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 
 from fastapi import FastAPI, HTTPException, Request, status
@@ -72,6 +73,14 @@ async def _start_trigger_scheduler() -> None:
     await scheduler.start()
     watcher = get_important_email_watcher()
     await watcher.start()
+    # Deliver anything that was still waiting in the outbox when the server stopped.
+    from .services.outbox import get_outbox
+
+    get_outbox().restore()
+    # Merge duplicate agents and retire idle ones: shortly after startup, then every 24 hours.
+    from .services.execution.lifecycle import get_maintenance_job
+
+    await get_maintenance_job().start()
 
 
 @app.on_event("shutdown")
@@ -81,6 +90,19 @@ async def _stop_trigger_scheduler() -> None:
     await scheduler.stop()
     watcher = get_important_email_watcher()
     await watcher.stop()
+    from .services.execution.lifecycle import get_maintenance_job
+
+    await get_maintenance_job().stop()
+    # Deliver anything still waiting in the outbox instead of losing it.
+    from .services.outbox import get_outbox
+
+    try:
+        await asyncio.wait_for(get_outbox().flush_now(), timeout=20)
+    except Exception as exc:  # pragma: no cover - shutdown best effort
+        logger.warning("Outbox flush on shutdown failed: %s", exc)
+    from .openrouter_client.client import close_shared_clients
+
+    await close_shared_clients()
 
 
 __all__ = ["app"]

@@ -1,0 +1,146 @@
+OpenPoke: what we fixed, and what it changed
+==============================================================================
+The companion to SUMMARY.txt (the problems). Same nine issues, same order. For each: the fix, the measured
+impact, and why we fixed it this way. Numbers are measured unless marked "estimate"; sources are in RESULTS.txt.
+"Before/after" routing numbers are on the same model (Sonnet 4) and the same 40 requests, so only the code differs.
+
+1. THE MAIN AGENT SEES ONLY AGENT NAMES, AND SEES ALL OF THEM EVERY TURN
+   Fix: every agent now has a description, the people it deals with and its other names, and for each message
+   the main agent sees only the ~10 most relevant agents (found by word matching plus meaning, via embeddings)
+   and the 3 most recently used, instead of every name.
+   Impact: the agent list costs about 330 tokens instead of 2,960 at 277 agents, and stays that size as agents
+   are added; the right agent is on the list for 97.7% of requests; routing accuracy stayed at 95%, and on
+   reworded requests it rose from 71% to 93%.
+   Why this way: research on large tool sets (RAG-MCP and others) shows that retrieving a few candidates beats
+   showing everything. We combined word matching (exact names, IDs) with embeddings (rewording) because our own
+   eval showed words alone found 0% of reworded requests. We picked the embedding model by testing three on our
+   data, and kept the recent agents on the list so an ongoing thread is never hidden.
+
+2. AGENTS ARE NEVER REMOVED OR MERGED, AND THE NAME IS THE ONLY ID
+   Fix: agents get a stable ID and aliases; names that differ only by case or punctuation are one agent; a new
+   agent name is first checked against existing agents; and a background job (at startup, then daily) merges
+   duplicates, moves their reminders to the survivor, and retires idle agents (14 days dormant, 60 archived).
+   Impact: requests reached the agent holding the thread's main history 80% of the time instead of 25%; on the
+   eval history, 91% of duplicate pairs were merged (277 agents down to 175) with zero wrong merges; new names
+   for an existing person were reused 15 of 15 times and different people were kept apart 26 of 26 times.
+   Why this way: a wrong merge would hand one person's context to another, which is worse than a duplicate, so a
+   merge needs clear evidence (same person AND same topic) and otherwise keeps agents separate. Merging runs in
+   the background so it never slows a reply, and nothing is deleted: merged names still reach the survivor.
+
+3. EACH AGENT'S HISTORY GROWS WITHOUT LIMIT, AND PART OF IT IS CUT OFF
+   Fix: an agent's prompt now holds a rolling summary of older runs, the IDs they mentioned, and its last 3 runs
+   word for word, capped at about 2,000 tokens; full tool results are saved on disk with a short summary in the
+   history and a tool to fetch them back; and each request is recorded once.
+   Impact: after 50 runs a worker's prompt is 5,706 tokens instead of 23,779, so a call costs $0.017 instead of
+   $0.072; in the memory test, 40 runs of history shrank from about 12,970 to about 1,400 tokens while keeping
+   4 of 4 IDs and 5 of 5 key facts.
+   Why this way: summarising after every run would cost a model call each time and slowly distort details, so
+   older runs are folded in batches in the background. IDs are copied by code, not by the summariser, because
+   summaries drop or invent them. Full results are kept because the old 500-character cut lost real data.
+
+4. THE APP HAS NO LIMIT ON HOW OFTEN IT INTERRUPTS THE USER
+   Fix: every background result now goes through one outbox, which waits a short window (1 second for things
+   the user asked for, 10 seconds for reminders, 2 minutes for email alerts) and then delivers everything
+   waiting as ONE message; email alerts also get a growing cooldown (2, 3, 5, 8, 13, 21 minutes).
+   Impact: five reminders due together became one message instead of five (also seen live with two reminders);
+   in a simulated 3-hour stream of emails, 13 alerts instead of 36; an important email reached the user in
+   about 3.5 minutes, and a newsletter not at all.
+   Why this way: the window handles bursts and the cooldown handles a steady trickle; the user's own requests
+   are never held back. We chose a Fibonacci cooldown after simulating it against a fixed one: the first alerts
+   still arrive quickly, and long busy stretches get grouped more. A per-hour cap was dropped to keep it simple.
+
+5. FINISHED RESULTS WAIT FOR THE SLOWEST AGENT, AND ONE AGENT CAN RUN TWICE AT ONCE
+   Fix: each result is delivered as soon as it is ready (the outbox only merges results that finish within a
+   second of each other); requests to the same agent now wait their turn; and Gmail calls run on a background
+   thread instead of freezing the app.
+   Impact: a finished result no longer waits up to 90 seconds for a slow agent; a second request to the same
+   agent sees the first one's result; different agents still run in parallel; a slow Gmail call no longer
+   stalls every other agent and the web app (all shown by tests).
+   Why this way: the delay came from releasing results as a batch, so we removed the batch rather than tuning
+   its timeout. A per-agent queue is the simplest way to keep one agent's history consistent, and threads were
+   needed because the Gmail SDK cannot be awaited.
+
+6. EVERY JOB USES THE SAME EXPENSIVE MODEL, AND COST WAS NOT TRACKED
+   Fix: each job now has its own model setting (Sonnet 5.5 for the main agent and the worker; Haiku 5.5 for the
+   email check, both summarisers and email search); every model call is logged with tokens, cost and time; the
+   repeated part of each prompt is cached; and every call has an output cap.
+   Impact: routing cost per request fell from $0.0227 to $0.0063 (-72%), with 84% of the input read from cache
+   (a cached call cost $0.0011 instead of $0.0129); the email check costs 20x less with the same 100% score;
+   memory summaries cost 18x less while keeping the same facts.
+   Why this way: we kept the strongest model only where judgment and text the user reads matter, and moved a
+   job to Haiku only after an eval showed no loss in quality. Caching fits because the system prompt is the
+   same on every call. Sonnet 5.5 is the default, though routing was equally good and equally cheap on Sonnet 4.
+
+7. BROKEN TOOL CALLS ARE HIDDEN, AND THE PROMPT NAMES A TOOL THAT DOES NOT EXIST
+   Fix: when a worker sends a tool call with broken arguments, the tool is not run and the model is told the
+   arguments were invalid; the instruction to use the non-existent reacttomessage tool was removed.
+   Impact: the model gets a message it can act on ("resend valid JSON") instead of a misleading one ("missing 3
+   arguments"), so it can correct itself; tests cover both cases (not measured live).
+   Why this way: the main agent already handled broken arguments correctly, so we made the worker behave the
+   same, and the phantom tool only invited calls that would fail.
+
+8. EVERY TURN WASTES A MODEL CALL AND REPEATS MESSAGES TO THE USER
+   Fix: a turn now ends once the model has told the user and has either handed off the work or passed on a
+   result; a draft repeated in the follow-up message is removed; and a failed turn leaves the user a short note.
+   Impact: in the live reminder session there were 0 wasted calls (before, 3 of 10 calls, 28% of the cost);
+   the user sees a draft once; a failure is no longer silent.
+   Why this way: the simple rule "stop after the first message" would have dropped work, because the logs
+   showed the model sometimes acknowledges first and hands off in its next call. We deliberately kept the
+   short "on it" reply and the final confirmation: one gives instant feedback, the other is the honest
+   confirmation that something really happened.
+
+9. THE MAIN AGENT'S CHAT HISTORY ALSO GROWS UNTIL MESSAGE 100
+   Fix: the chat is summarised once it passes about 4,000 tokens instead of after 110 messages, the history in
+   the prompt is capped even before a summary exists, the summary itself has a length limit, and a summary cut
+   off by the output limit is retried instead of saved.
+   Impact: at 100 messages the main agent's prompt is 7,903 tokens instead of 9,998, and it stays flat as the
+   chat grows; in live use the summary started on its own and cost $0.003.
+   Why this way: the size of a message varies a lot, so we measure the history by size, not by count. The cap
+   was doubled from the first proposal (2,000 to 4,000 tokens) to keep more recent conversation verbatim.
+   The hard cap means the prompt stays bounded even if summarising fails.
+
+MAJOR WINS (measured; details and sources in RESULTS.txt)
+==============================================================================
+Money
+   - Routing a request: $0.0227 -> $0.0063 (-72%); reworded requests $0.0309 -> $0.0068 (-78%).
+   - A long-lived worker's call after 50 runs: $0.072 -> $0.017 (-76%).
+   - Prompt caching: a repeated call $0.0129 -> $0.0011 (-91%); 84% of routing input read from cache.
+   - Cheaper models where quality allowed it: email check 20x cheaper, memory summaries 18x cheaper, same scores.
+   - Wasted model calls per reminder: 3 of 10 (28% of the bill) -> 0.
+
+Time
+   - Routing latency: p50 2.9s -> 2.3s, p95 4.6s -> 3.4s (-26%); reworded requests p50 3.8s -> 2.5s.
+   - A finished result no longer waits for the slowest agent (up to 90 s before).
+   - A slow Gmail call no longer freezes the rest of the app (other agents, reminders, the web page).
+   - Reminders fire about 3 s after they are due.
+
+Prompt size (what every call pays for)
+   - Agent list: 2,960 -> about 330 tokens at 277 agents, and constant as agents are added.
+   - A worker's prompt after 50 runs: 23,779 -> 5,706 tokens; its history 12,970 -> about 1,400 tokens.
+   - The main agent's prompt: 9,998 -> 7,903 tokens at 100 messages, and flat after that (it used to keep growing).
+
+Quality
+   - Requests reaching the agent that holds the thread's history: 25% -> 80%.
+   - Requests sent to an unrelated agent: 2.5% -> 0%.
+   - Reworded requests routed correctly: 71% -> 93%; duplicate agents created for them: 4 -> 1.
+   - Duplicate agents cleaned up: 277 -> 175 with zero wrong merges.
+   - Memory keeps 5 of 5 key facts and 4 of 4 IDs after compaction.
+
+Interruptions
+   - Five reminders due together: 5 messages -> 1.
+   - A 3-hour stream of email alerts (simulated): 36 messages -> 13.
+
+Data that survives a restart (before: lost)
+   - The connected Gmail account (a restart used to disconnect Gmail silently).
+   - Emails waiting for the user's approval.
+   - Results waiting to be delivered (kept until actually delivered).
+   - Agents, their memory, stored results and reminders were already on disk; now they are also saved safely
+     (a failed save can no longer empty the agent list) and "Clear history" keeps them (it used to delete every
+     agent and every reminder).
+
+Reliability and testing
+   - Automated tests: 0 -> 242, run in about 20 seconds with no network and no cost.
+   - All 20 problems recorded as known-bug tests at the start now pass.
+   - 9 further bugs found by live testing in the real app, each fixed and covered by a test.
+   - Every eval is repeatable with one command and a spending cap, and compares against the saved baseline.
+   - Sending email now requires the user's approval in code (live-tested), not just a sentence in the prompt.

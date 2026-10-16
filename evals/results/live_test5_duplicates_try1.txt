@@ -1,0 +1,11 @@
+LIVE TEST 5 (first try): duplicate agents (2026-10-14 23:53-23:56) - NO DUPLICATE, but the duplicate check was not exercised
+The main agent wrote the dinner draft itself (no worker agent), and on 'reply to mod16 that 7 pm works' asked a clarifying question instead of creating an agent.
+Seen in the registry: the maintenance job (startup + 60s) merged 'Email to Jane Doe' into 'Email to Jane' - a real duplicate from earlier attempts.
+Bug found and fixed: extracted email addresses kept a trailing '.' from the end of a sentence.
+
+<user_message timestamp="2026-10-14 23:53:34">email sam.park@example.com ask if dinner works tomorrow 6pm</user_message>
+<poke_reply timestamp="2026-10-14 23:53:37">To: sam.park@example.com | Subject: Dinner tomorrow at 6 PM? |  | Hi, does dinner tomorrow at 6 PM work for you?</poke_reply>
+<poke_reply timestamp="2026-10-14 23:53:37">Draft's above. Nothing's sent yet. Reply "yes" to send, or tell me what to change.</poke_reply>
+<wait timestamp="2026-10-14 23:53:38">Draft shown and user prompted; awaiting confirmation.</wait>
+<user_message timestamp="2026-10-14 23:55:56">reploy to mod16 that 7 pm works</user_message>
+<poke_reply timestamp="2026-10-14 23:56:00">The dinner email to mod16 hasn't gone out yet, and I don't see a reply from them. Do you want me to change that draft to 7 PM? Or is there a message from mod16 you want me to answer?</poke_reply>

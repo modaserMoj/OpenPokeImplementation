@@ -54,6 +54,8 @@ _SYSTEM_PROMPT = dedent(
        whenever they appear in the logs.
     6. Order bullets earliest-first within each section and keep language concise yet information-dense.
     7. Do not invent facts; only use information present in the existing summary or new logs.
+    8. Keep the whole briefing under about 500 words: drop completed, trivial or duplicated items before
+       anything that is pending, dated or has an identifier.
     """
 ).strip()
 

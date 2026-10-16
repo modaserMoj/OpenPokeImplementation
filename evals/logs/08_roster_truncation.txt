@@ -1,0 +1,10 @@
+PROBLEM: (new) roster.save() truncates roster.json before acquiring its lock
+CLAIM:   Not in the original list; found while reading roster.py.
+==============================================================================
+Before: [   "Email to Alice",   "Email to Bob" ]
+After failed save under lock contention: size=0 bytes, content=''
+Fresh AgentRoster(path).get_agents() -> []
+Next turn's roster.load() hits a JSON decode error -> roster becomes [] -> every agent forgotten.
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     open(path,'w') truncates first; LOCK_NB failure leaves an empty file.

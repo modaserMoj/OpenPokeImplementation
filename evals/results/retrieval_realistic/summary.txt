@@ -1,0 +1,15 @@
+RETRIEVAL EVAL  label=realistic  agents=277  requests=44 (dup_trap 10, exact 10, indirect 10, paraphrase 14)
+====================================================================================================
+Right thread on the list the main agent sees (top 10 + 3 most recent):
+   configuration                             all   dup_trap      exact   indirect paraphrase   main agent
+   words only                              68.2%       100%       100%       100%         0%          64%
+   semantic voyage-4-lite                  97.7%       100%       100%       100%        93%          93%
+   hybrid w=0.5  voyage-4-lite             97.7%       100%       100%       100%        93%          93%
+
+Ranker quality alone, right thread within the top k (all requests):
+   configuration                             top 3    top 5   top 10    paraphrase top 5
+   words only                                65.9%    68.2%    68.2%                  0%
+   semantic voyage-4-lite                    93.2%    95.5%    97.7%                 93%
+   hybrid w=0.5  voyage-4-lite               86.4%    97.7%    97.7%                 93%
+
+Agent list size (estimate): 329 tokens shown vs 2962 tokens for every name (names only).

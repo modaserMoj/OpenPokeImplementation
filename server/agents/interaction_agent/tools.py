@@ -6,8 +6,10 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from ...logging_config import logger
+from ...services.approvals import current_turn, get_approval_store
 from ...services.conversation import get_conversation_log
 from ...services.execution import get_agent_roster, get_execution_agent_logs
+from ...services.execution import lifecycle
 from ..execution_agent.batch_manager import ExecutionBatchManager
 
 
@@ -63,13 +65,13 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "send_draft",
-            "description": "Record an email draft so the user can review the exact text.",
+            "description": "Show the user the exact email (all recipients, subject, body) so they can review it. Only text shown with this tool can be approved for sending.",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "to": {
                         "type": "string",
-                        "description": "Recipient email for the draft.",
+                        "description": "Every recipient of the draft (to, cc and bcc), exactly as it will be sent.",
                     },
                     "subject": {
                         "type": "string",
@@ -81,6 +83,23 @@ TOOL_SCHEMAS = [
                     },
                 },
                 "required": ["to", "subject", "body"],
+                "additionalProperties": False,
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "approve_send",
+            "description": "Record the user's approval to send a draft you already showed them with send_draft. Call it only when the user's latest message clearly confirms (for example 'yes, send it'). The system refuses it otherwise. After it succeeds, tell the agent to send exactly that content.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "proposal_id": {
+                        "type": "string",
+                        "description": "Which draft, only needed when more than one is waiting for approval.",
+                    },
+                },
                 "additionalProperties": False,
             },
         },
@@ -110,27 +129,34 @@ _EXECUTION_BATCH_MANAGER = ExecutionBatchManager()
 
 # Create or reuse execution agent and dispatch instructions asynchronously
 def send_message_to_agent(agent_name: str, instructions: str) -> ToolResult:
-    """Send instructions to an execution agent."""
+    """Send instructions to an execution agent.
+
+    A known name (or an alias, or the same name spelled differently) goes straight to that agent. A name nobody
+    has used yet is first checked against the existing agents in the background: if one already covers this
+    thread it is reused (the new name becomes its alias); otherwise a new agent is created. See
+    server/services/execution/lifecycle.py."""
     roster = get_agent_roster()
     roster.load()
-    existing_agents = set(roster.get_agents())
-    is_new = agent_name not in existing_agents
-
-    if is_new:
-        roster.add_agent(agent_name)
-
-    get_execution_agent_logs().record_request(agent_name, instructions)
-
-    action = "Created" if is_new else "Reused"
-    logger.info(f"{action} agent: {agent_name}")
+    requested_name = agent_name
+    existing = roster.resolve(agent_name)
+    is_new = existing is None
+    if existing is not None:
+        agent_name = existing.name
+        roster.touch(agent_name)
+        logger.info(f"Reused agent: {agent_name}")
 
     async def _execute_async() -> None:
+        target = agent_name
         try:
-            result = await _EXECUTION_BATCH_MANAGER.execute_agent(agent_name, instructions)
+            if is_new:
+                target = await lifecycle.resolve_new_agent(requested_name, instructions)
+                roster.touch(target)
+                logger.info(f"{'Created' if target == requested_name else 'Reused'} agent: {target}")
+            result = await _EXECUTION_BATCH_MANAGER.execute_agent(target, instructions)
             status = "SUCCESS" if result.success else "FAILED"
-            logger.info(f"Agent '{agent_name}' completed: {status}")
+            logger.info(f"Agent '{target}' completed: {status}")
         except Exception as exc:  # pragma: no cover - defensive
-            logger.error(f"Agent '{agent_name}' failed: {str(exc)}")
+            logger.error(f"Agent '{target}' failed: {str(exc)}")
 
     try:
         loop = asyncio.get_running_loop()
@@ -140,28 +166,50 @@ def send_message_to_agent(agent_name: str, instructions: str) -> ToolResult:
 
     loop.create_task(_execute_async())
 
-    return ToolResult(
-        success=True,
-        payload={
-            "status": "submitted",
-            "agent_name": agent_name,
-            "new_agent_created": is_new,
-        },
-    )
+    payload = {"status": "submitted", "agent_name": agent_name, "new_agent_created": is_new}
+    if requested_name != agent_name:
+        payload["resolved_from"] = requested_name
+    if is_new:
+        payload["note"] = ("No agent has this name yet. If an existing agent already covers this thread it is reused; "
+                           "the result will say which agent handled it.")
+    return ToolResult(success=True, payload=payload)
 
 
 # Send immediate message to user and record in conversation history
 def send_message_to_user(message: str) -> ToolResult:
-    """Record a user-visible reply in the conversation log."""
+    """Record a user-visible reply in the conversation log.
+
+    If the message repeats a draft the user was just shown with send_draft in this same turn, the repeated part is
+    removed, so the user sees the draft once."""
+    turn = current_turn()
+    cleaned = _without_shown_drafts(message, turn.drafts) if turn else message
+    if cleaned != message and not cleaned.strip():
+        return ToolResult(
+            success=False,
+            payload={"error": "That only repeats the draft the user was just shown. Send a short question asking whether to send it."},
+        )
     log = get_conversation_log()
-    log.record_reply(message)
+    log.record_reply(cleaned)
 
     return ToolResult(
         success=True,
         payload={"status": "delivered"},
-        user_message=message,
+        user_message=cleaned,
         recorded_reply=True,
     )
+
+
+def _plain(text: str) -> str:
+    return " ".join((text or "").lower().split())
+
+
+def _without_shown_drafts(message: str, drafts) -> str:
+    """Drop the paragraphs of `message` that are just part of a draft already shown in this turn."""
+    if not drafts:
+        return message
+    shown = " ".join(_plain(f"to: {to} subject: {subject} {body}") for to, subject, body in drafts)
+    kept = [p for p in message.split("\n\n") if not (_plain(p) and _plain(p) in shown)]
+    return "\n\n".join(kept).strip() if len(kept) != len(message.split("\n\n")) else message
 
 
 # Format and record email draft for user review
@@ -177,6 +225,13 @@ def send_draft(
 
     log.record_reply(message)
     logger.info(f"Draft recorded for: {to}")
+    store = get_approval_store()
+    shown = store.mark_shown(to, body)
+    if not shown:  # nothing an agent created matches: the shown text itself becomes approvable (sent word for word)
+        store.record_shown(to, subject, body)
+    turn = current_turn()
+    if turn is not None:
+        turn.drafts.append((to, subject, body))
 
     return ToolResult(
         success=True,
@@ -184,8 +239,24 @@ def send_draft(
             "status": "draft_recorded",
             "to": to,
             "subject": subject,
+            "can_be_approved": [p.id for p in shown],
         },
         recorded_reply=True,
+    )
+
+
+# Record that the user approved sending a draft they were shown (enforced by code, see services/approvals.py)
+def approve_send(proposal_id: Optional[str] = None) -> ToolResult:
+    proposal, reason = get_approval_store().approve(proposal_id)
+    if proposal is None:
+        return ToolResult(success=False, payload={"error": reason})
+    return ToolResult(
+        success=True,
+        payload={
+            "status": "approved",
+            **proposal.label(),
+            "next": "Tell the agent to send it now, with exactly the same recipients and text.",
+        },
     )
 
 
@@ -231,6 +302,8 @@ def handle_tool_call(name: str, arguments: Any) -> ToolResult:
             return send_message_to_user(**args)
         if name == "send_draft":
             return send_draft(**args)
+        if name == "approve_send":
+            return approve_send(**args)
         if name == "wait":
             return wait(**args)
 

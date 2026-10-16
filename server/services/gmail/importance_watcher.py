@@ -19,12 +19,6 @@ if TYPE_CHECKING:  # pragma: no cover - typing only
     from ...agents.interaction_agent.runtime import InteractionAgentRuntime
 
 
-def _resolve_interaction_runtime() -> "InteractionAgentRuntime":
-    from ...agents.interaction_agent.runtime import InteractionAgentRuntime
-
-    return InteractionAgentRuntime()
-
-
 DEFAULT_POLL_INTERVAL_SECONDS = 60.0
 DEFAULT_LOOKBACK_MINUTES = 10
 DEFAULT_MAX_RESULTS = 50
@@ -123,7 +117,9 @@ class ImportantEmailWatcher:
         }
 
         try:
-            raw_result = execute_gmail_tool("GMAIL_FETCH_EMAILS", composio_user_id, arguments=arguments)
+            raw_result = await asyncio.to_thread(  # synchronous SDK call: run it off the event loop
+                execute_gmail_tool, "GMAIL_FETCH_EMAILS", composio_user_id, arguments=arguments
+            )
         except Exception as exc:
             logger.warning(
                 "Failed to fetch Gmail messages for watcher",
@@ -220,15 +216,10 @@ class ImportantEmailWatcher:
         self._complete_poll(user_now)
 
     async def _dispatch_summary(self, summary: str) -> None:
-        runtime = _resolve_interaction_runtime()
-        try:
-            contextualized = f"Important email watcher notification:\n{summary}"
-            await runtime.handle_agent_message(contextualized)
-        except Exception as exc:  # pragma: no cover - defensive
-            logger.error(
-                "Failed to dispatch important email summary",
-                extra={"error": str(exc)},
-            )
+        # Through the outbox: alerts that arrive close together (or during a cooldown) become one message.
+        from ..outbox import EMAIL, get_outbox
+
+        get_outbox().add(EMAIL, f"Important email watcher notification:\n{summary}")
 
 
 _watcher_instance: Optional[ImportantEmailWatcher] = None

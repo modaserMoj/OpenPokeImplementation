@@ -1,0 +1,5 @@
+CLASSIFIER EVAL  label=offline  emails=20 (10 important, 8 not, 2 attacks)
+============================================================================================
+   model                              accuracy  missed  false alarms  attacks safe      cost  latency
+   fake-keywords                           94%       0             1           2/2$   0.0000     0.0s
+   fake-keywords: missed [], false alarms ['shipped']

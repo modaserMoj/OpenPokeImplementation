@@ -2,9 +2,11 @@
 
 from html import escape
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from ...services.execution import get_agent_roster
+from ...utils.timezones import current_time_note
+from ...services.execution.retrieval import aselect_agents, select_agents
 
 _prompt_path = Path(__file__).parent / "system_prompt.md"
 SYSTEM_PROMPT = _prompt_path.read_text(encoding="utf-8").strip()
@@ -21,12 +23,20 @@ def prepare_message_with_history(
     latest_text: str,
     transcript: str,
     message_type: str = "user",
+    active_agents: Optional[str] = None,
+    notes: Optional[str] = None,
 ) -> List[Dict[str, str]]:
-    """Compose a message that bundles history, roster, and the latest turn."""
+    """Compose a message that bundles history, roster, and the latest turn.
+
+    `active_agents` is the pre-rendered agent section from `render_active_agents` (which can use the semantic
+    ranker). When omitted, a word-matching-only view is built synchronously."""
     sections: List[str] = []
 
     sections.append(_render_conversation_history(transcript))
-    sections.append(f"<active_agents>\n{_render_active_agents()}\n</active_agents>")
+    sections.append(f"<active_agents>\n{active_agents if active_agents is not None else _render_active_agents(latest_text)}\n</active_agents>")
+    sections.append(f"<current_time>{current_time_note()}</current_time>")
+    if notes:
+        sections.append(notes)
     sections.append(_render_current_turn(latest_text, message_type))
 
     content = "\n\n".join(sections)
@@ -41,21 +51,44 @@ def _render_conversation_history(transcript: str) -> str:
     return f"<conversation_history>\n{history}\n</conversation_history>"
 
 
-# Format currently active execution agents into XML tags for LLM awareness
-def _render_active_agents() -> str:
+def _format_agents(records, shown) -> str:
+    rendered: List[str] = []
+    for record in shown:
+        name = escape(record.name or "agent", quote=True)
+        about = escape(" ".join(record.description.split())[:100], quote=True)
+        attributes = f'name="{name}"' + (f' about="{about}"' if about else "")
+        # Who the agent deals with, and the other names it answers to (duplicates merged into it): without these
+        # the model cannot tell that "any word from Lewis?" belongs to "Email to Zeke" (Zeke Lewis).
+        if record.people:
+            attributes += f' people="{escape(", ".join(record.people[:4]), quote=True)}"'
+        if record.aliases:
+            attributes += f' also_called="{escape(", ".join(record.aliases[:3]), quote=True)}"'
+        attributes += f' last_active="{record.last_active_at[:10]}"'
+        rendered.append(f"<agent {attributes} />")
+    hidden = len(records) - len(shown)
+    if hidden > 0:
+        rendered.append(f'<other_agents count="{hidden}" note="not listed because they match this message less well" />')
+    return "\n".join(rendered)
+
+
+# Format the execution agents relevant to this message (word matching only; used when no async view is given)
+def _render_active_agents(query: str = "") -> str:
     roster = get_agent_roster()
     roster.load()
-    agents = roster.get_agents()
-
-    if not agents:
+    records = roster.list_records()
+    if not records:
         return "None"
+    return _format_agents(records, select_agents(records, query))
 
-    rendered: List[str] = []
-    for agent_name in agents:
-        name = escape(agent_name or "agent", quote=True)
-        rendered.append(f'<agent name="{name}" />')
 
-    return "\n".join(rendered)
+# Format the execution agents relevant to this message, using every configured ranker (word + semantic)
+async def render_active_agents(query: str = "") -> str:
+    roster = get_agent_roster()
+    roster.load()
+    records = roster.list_records()
+    if not records:
+        return "None"
+    return _format_agents(records, await aselect_agents(records, query))
 
 
 # Wrap the current message in appropriate XML tags based on sender type

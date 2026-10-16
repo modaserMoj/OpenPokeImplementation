@@ -1,0 +1,62 @@
+ROUTING EVAL  label=after_s4  dataset=b7d31a52501b  requests=40  roster=277 agents   (api errors excluded: 0, 429 retries: 0)
+======================================================================
+accuracy                  95.0%   (right agent reused, or new agent when none fits)
+  + duplicate check       95.0%   (new names caught by the check behind the model: 0)
+reuse recall              93.3%   (existing thread -> right agent)
+duplicate-agent rate       6.7%   (existing thread -> NEW agent created)
+primary-agent hit rate   80.0%   (thread split over 2-4 agents -> went to the one holding the main history; 20 requests)
+wrong-reuse rate           0.0%   (sent to an unrelated agent)
+no-route rate              0.0%   (never called send_message_to_agent)
+
+accuracy by category:
+  dup_trap   100.0%
+  exact      100.0%
+  indirect    80.0%
+  new        100.0%
+
+prompt tokens, 1st call   avg 4327
+prompt tokens / request   avg 4327   (1.0 LLM calls)
+cost / request            $0.0063   total $0.252
+latency / request         p50 2.3s   p95 3.4s
+
+per-request outcomes (id, outcome, routed-to):
+  exact-01     correct_reuse  Email to Tess
+  exact-02     correct_reuse  Message Lola Morales
+  exact-03     correct_reuse  Message Nina Price
+  exact-04     correct_reuse  Frank follow-up
+  exact-05     correct_reuse  Podcast Guest - Hannah
+  exact-06     correct_reuse  Conference Talk - Chris
+  exact-07     correct_reuse  Uma photo shoot
+  exact-08     correct_reuse  Quentin podcast guest
+  exact-09     correct_reuse  Dina reply
+  exact-10     correct_reuse  Follow up with Igor Edwards
+  indirect-01  correct_reuse  Message Owen Ward
+  indirect-02  correct_reuse  Follow up with Sam Gray
+  indirect-03  correct_reuse  Email to Zeke
+  indirect-04  missed_reuse   Hill tax receipts check
+  indirect-05  missed_reuse   Allen vendor pricing check
+  indirect-06  correct_reuse  Parking permit
+  indirect-07  correct_reuse  Internship applications
+  indirect-08  correct_reuse  Co-working pass
+  indirect-09  correct_reuse  Check estate paperwork
+  indirect-10  correct_reuse  Check standing desk order
+  duptrap-01   correct_reuse  Kyle reply
+  duptrap-02   correct_reuse  Message Pablo Wallace
+  duptrap-03   correct_reuse  Message Bella Phillips
+  duptrap-04   correct_reuse  Follow up with Mason Gutierrez
+  duptrap-05   correct_reuse  Email to Sara
+  duptrap-06   correct_reuse  Email to Simon
+  duptrap-07   correct_reuse  Conference Talk - Iris
+  duptrap-08   correct_reuse  Message Leo Fisher
+  duptrap-09   correct_reuse  Email to Walter
+  duptrap-10   correct_reuse  Wendy follow-up
+  new-01       correct_new    Email to Marguerite Okonkwo
+  new-02       correct_new    Email to Tobias Lindqvist
+  new-03       correct_new    Email to Anneliese Bauer
+  new-04       correct_new    Email to Declan Ferreira
+  new-05       correct_new    Email to Sunita Rao
+  new-06       correct_new    Email to Bjorn Halvorsen
+  new-07       correct_new    Email to Imani Washington
+  new-08       correct_new    Email to Lucía Navarro
+  new-09       correct_new    Email to Kofi Mensah
+  new-10       correct_new    Email to Hiroshi Tanabe

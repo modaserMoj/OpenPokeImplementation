@@ -1,0 +1,32 @@
+LIVE TRACE: email send guard, first attempt (2026-10-14 23:11-23:13) - FAILED, user asked to confirm 4 times, nothing sent
+Causes (both fixed, tests in tests/test_approvals.py 'found live'):
+ 1. Composio returns {"error": null, "successful": true} on success; code checked '"error" not in result' -> no proposal registered -> every yes refused.
+ 2. Main agent showed a draft it wrote itself (no Gmail draft yet) -> nothing to attach the approval to. Now approval binds to the exact text shown.
+ 3. Model called approve_send together with 'Sending it now' before seeing the refusal. Prompt now: approve_send alone, wait for result.
+
+--- conversation
+<user_message timestamp="2026-10-14 23:11:53">email john.roe@example.com that the meeting got moved to later 3 pm</user_message>
+<poke_reply timestamp="2026-10-14 23:11:57">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, |  | Quick heads up: the meeting has been moved to later, at 3 PM. |  | Thanks!</poke_reply>
+<poke_reply timestamp="2026-10-14 23:11:57">Draft's above. Good to send, or want to tweak it (like adding the day)?</poke_reply>
+<wait timestamp="2026-10-14 23:11:58">Draft shown and user asked to confirm; awaiting their reply.</wait>
+<user_message timestamp="2026-10-14 23:12:26">make it shorter</user_message>
+<poke_reply timestamp="2026-10-14 23:12:29">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:12:29">Trimmed. Send it?</poke_reply>
+<wait timestamp="2026-10-14 23:12:34">Shorter draft shown and user asked to confirm; awaiting reply.</wait>
+<user_message timestamp="2026-10-14 23:12:35">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:12:42">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:12:42">Needed to put the draft through properly first. Same text as above. Confirm once more and I'll send it.</poke_reply>
+<wait timestamp="2026-10-14 23:12:44">Draft re-shown; awaiting user's confirmation.</wait>
+<user_message timestamp="2026-10-14 23:12:51">send</user_message>
+<poke_reply timestamp="2026-10-14 23:12:54">Sending it now.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:12:58">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:12:58">Correction: I said it was sending, but it wasn't approved yet. Nothing has gone out. Draft's above, so reply "yes" to confirm and I'll send it.</poke_reply>
+<agent_message timestamp="2026-10-14 23:13:02">[SUCCESS] Email to Jane: I created the draft but haven't sent it. I need the user's confirmation first. |  | - **To:** john.roe@example.com | - **Subject:** Meeting moved to 3 PM | - **Body:** Hi, the meeti
+<poke_reply timestamp="2026-10-14 23:13:05">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:13:05">Draft's ready for real this time. Reply "yes" and it goes out.</poke_reply>
+<user_message timestamp="2026-10-14 23:13:13">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:13:19">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:13:19">The system wants one more confirmation on this exact draft. Reply "yes" and it goes out.</poke_reply>
+<user_message timestamp="2026-10-14 23:13:23">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:13:29">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:13:29">Sorry for the runaround, my earlier confirmations didn't register. That's the draft, and it's registered now. Reply "yes" once more and it goes out.</poke_reply>

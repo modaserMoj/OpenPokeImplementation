@@ -1,0 +1,24 @@
+PROBLEM: Roster is names only and is injected whole into every interaction turn
+CLAIM:   No description/last-used/status/summary; full list rendered as <agent name=.../>.
+==============================================================================
+On-disk roster.json schema after adding one agent:
+  [   "Email to Alice" ]
+
+ roster size | prompt chars | ~tokens/turn
+          10 |          438 |          109
+          50 |         1698 |          424
+         200 |         5488 |         1372
+        1000 |        26288 |         6572
+
+What the model actually sees for 3 agents:
+
+<agent name="Email to Alice" />
+<agent name="Alice reply" />
+<agent name="Alice follow-up" />
+</active_agents>
+
+
+Cost grows linearly with agent count on EVERY turn (user, trigger result, email-watcher alert), and the model picks an agent from the name alone.
+==============================================================================
+VERDICT: CONFIRMED
+WHY:     Roster is list[str]; entire list rendered each turn; no metadata exists to route on.

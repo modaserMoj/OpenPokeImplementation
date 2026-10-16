@@ -14,6 +14,15 @@ if TYPE_CHECKING:  # pragma: no cover - type checking only
     from ..log import ConversationLog
 
 
+SUMMARY_MAX_TOKENS = 2000       # output budget incl. any hidden reasoning; the briefing length is set by the prompt
+SUMMARY_MAX_CHARS = 5000
+
+
+def _history_chars(summary_text: str, entries: List[LogEntry]) -> int:
+    """Roughly what the history would cost in the prompt if nothing were left out."""
+    return len(summary_text or "") + sum(len(entry.payload) + 50 for entry in entries)
+
+
 def _resolve_conversation_log() -> "ConversationLog":
     from ..log import get_conversation_log
 
@@ -36,10 +45,13 @@ async def _call_openrouter(prompt: SummaryPrompt, model: str, api_key: Optional[
                 messages=prompt.messages,
                 system=prompt.system_prompt,
                 api_key=api_key,
+                max_tokens=SUMMARY_MAX_TOKENS * (attempt + 1),  # a cut-off first try gets twice the room
             )
             choices = response.get("choices") or []
             if not choices:
                 raise OpenRouterError("OpenRouter response missing choices")
+            if choices[0].get("finish_reason") == "length":  # cut off (reasoning models spend budget thinking)
+                raise OpenRouterError("summary was cut off by the output limit")
             message = choices[0].get("message") or {}
             content = (message.get("content") or "").strip()
             if content:
@@ -88,10 +100,13 @@ async def summarize_conversation() -> bool:
         return False
 
     unsummarized_entries = [entry for entry in entries if entry.index > state.last_index]
-    if len(unsummarized_entries) < threshold + tail_size:
+    over_budget = _history_chars(state.summary_text, unsummarized_entries) > settings.conversation_history_budget_chars
+    over_count = len(unsummarized_entries) >= threshold + tail_size  # the original rule, kept as a backstop
+    if not (over_budget or over_count) or len(unsummarized_entries) <= tail_size:
         return False
 
-    batch = unsummarized_entries[:threshold]
+    # Fold everything except the most recent messages, which stay word for word.
+    batch = unsummarized_entries[: len(unsummarized_entries) - tail_size]
     cutoff_index = batch[-1].index
 
     prompt = build_summarization_prompt(state.summary_text, batch)
@@ -108,7 +123,7 @@ async def summarize_conversation() -> bool:
     )
 
     summary_text = await _call_openrouter(prompt, settings.summarizer_model, settings.openrouter_api_key)
-    summary_body = summary_text if summary_text else state.summary_text
+    summary_body = (summary_text if summary_text else state.summary_text)[:SUMMARY_MAX_CHARS]
 
     refreshed_entries = _collect_entries(conversation_log)
     remaining_entries = [entry for entry in refreshed_entries if entry.index > cutoff_index]

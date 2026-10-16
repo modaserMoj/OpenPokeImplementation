@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 from typing import Any, Callable, Dict, List, Optional
 
+from server.services.approvals import get_approval_store, recipients_of
 from server.services.execution import get_execution_agent_logs
 from server.services.gmail import execute_gmail_tool, get_active_gmail_user_id
 
@@ -71,7 +72,7 @@ _SCHEMAS: List[Dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "gmail_execute_draft",
-            "description": "Send a previously created Gmail draft using Composio.",
+            "description": "Send a previously created Gmail draft. The system refuses unless the user has already approved this exact draft.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -89,7 +90,7 @@ _SCHEMAS: List[Dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "gmail_forward_email",
-            "description": "Forward an existing Gmail message with optional additional context.",
+            "description": "Forward an existing Gmail message with optional additional context. Sends only after the user approved this exact text; otherwise it is refused and nothing is sent.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -115,7 +116,7 @@ _SCHEMAS: List[Dict[str, Any]] = [
         "type": "function",
         "function": {
             "name": "gmail_reply_to_thread",
-            "description": "Send a reply within an existing Gmail thread via Composio.",
+            "description": "Send a reply within an existing Gmail thread via Composio. Sends only after the user approved this exact text; otherwise it is refused and nothing is sent.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -343,6 +344,24 @@ def _execute(tool_name: str, composio_user_id: str, arguments: Dict[str, Any]) -
     return result
 
 
+_NOT_APPROVED = (
+    "Not sent: the user has not approved this email, and the system will not send it without their confirmation. "
+    "Do not retry. Tell Poke the exact recipients and text, and that the user must confirm first."
+)
+
+
+def _draft_id_from(result: Any) -> Optional[str]:
+    """The Gmail draft id inside a Composio response."""
+    if not isinstance(result, dict):
+        return None
+    for source in (result.get("data"), result):
+        if isinstance(source, dict):
+            for key in ("id", "draft_id"):
+                if isinstance(source.get(key), str):
+                    return source[key]
+    return None
+
+
 # Create a Gmail draft via Composio with support for HTML, attachments, and threading
 def gmail_create_draft(
     recipient_email: str,
@@ -369,13 +388,32 @@ def gmail_create_draft(
     composio_user_id = get_active_gmail_user_id()
     if not composio_user_id:
         return {"error": "Gmail not connected. Please connect Gmail in settings first."}
-    return _execute("GMAIL_CREATE_EMAIL_DRAFT", composio_user_id, arguments)
+    result = _execute("GMAIL_CREATE_EMAIL_DRAFT", composio_user_id, arguments)
+    draft_id = _draft_id_from(result)
+    succeeded = isinstance(result, dict) and not result.get("error") and result.get("successful", True) is not False
+    if draft_id and succeeded:  # Composio reports success with "error": None, so test the value, not the key
+        proposal = get_approval_store().propose(
+            "draft", recipients=recipients_of(recipient_email, cc, bcc, extra_recipients),
+            subject=subject, body=body, draft_id=draft_id,
+        )
+        note = ("The user already approved this exact email. Send it now with gmail_execute_draft "
+                f"(draft_id {draft_id})." if proposal.approved else
+                "Draft saved, not sent. It can only be sent after the user sees this exact text and confirms.")
+        result = {**result, "approval": {"proposal_id": proposal.id, "approved": proposal.approved, "note": note}}
+    return result
 
 
 # Send a previously created Gmail draft using Composio
 def gmail_execute_draft(
     draft_id: str,
 ) -> Dict[str, Any]:
+    store = get_approval_store()
+    if not store.consume_draft(draft_id):
+        if not store.knows_draft(draft_id):
+            return {"error": "Not sent: this draft is not one the approval system created or tracked (for example an "
+                             "older draft), so its content cannot be checked. Create a NEW draft with exactly the "
+                             "approved recipients and text, then send that one."}
+        return {"error": _NOT_APPROVED}
     arguments = {"draft_id": draft_id}
     composio_user_id = get_active_gmail_user_id()
     if not composio_user_id:
@@ -389,6 +427,12 @@ def gmail_forward_email(
     recipient_email: str,
     additional_text: Optional[str] = None,
 ) -> Dict[str, Any]:
+    store = get_approval_store()
+    recipients = recipients_of(recipient_email)
+    if not store.consume("forward", recipients=recipients, body=additional_text or "", extra=message_id):
+        proposal = store.propose("forward", recipients=recipients, subject=f"forward message {message_id}",
+                                 body=additional_text or "", extra=message_id)
+        return {"error": _NOT_APPROVED, "proposal": proposal.label()}
     arguments = {
         "message_id": message_id,
         "recipient_email": recipient_email,
@@ -411,6 +455,12 @@ def gmail_reply_to_thread(
     is_html: Optional[bool] = None,
     attachment: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
+    store = get_approval_store()
+    recipients = recipients_of(recipient_email, cc, bcc, extra_recipients)
+    if not store.consume("reply", recipients=recipients, body=message_body, extra=thread_id):
+        proposal = store.propose("reply", recipients=recipients, subject="reply in thread", body=message_body,
+                                 extra=thread_id)
+        return {"error": _NOT_APPROVED, "proposal": proposal.label()}
     arguments = {
         "thread_id": thread_id,
         "recipient_email": recipient_email,

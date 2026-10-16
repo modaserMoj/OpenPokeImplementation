@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 import os
 import threading
 from datetime import datetime
@@ -28,15 +29,39 @@ def _normalized(value: Optional[str]) -> str:
     return (value or "").strip()
 
 
+# The connected account is also kept on disk: before, every server restart silently disconnected Gmail while the
+# browser still showed "connected".
+_ACTIVE_USER_PATH = Path(__file__).resolve().parent.parent.parent / "data" / "gmail_active_user.json"
+_ACTIVE_USER_LOADED = False
+
+
 def _set_active_gmail_user_id(user_id: Optional[str]) -> None:
     sanitized = _normalized(user_id)
     with _ACTIVE_USER_ID_LOCK:
-        global _ACTIVE_USER_ID
+        global _ACTIVE_USER_ID, _ACTIVE_USER_LOADED
         _ACTIVE_USER_ID = sanitized or None
+        _ACTIVE_USER_LOADED = True
+        try:
+            if _ACTIVE_USER_ID:
+                _ACTIVE_USER_PATH.parent.mkdir(parents=True, exist_ok=True)
+                tmp = _ACTIVE_USER_PATH.with_suffix(".tmp")
+                tmp.write_text(json.dumps({"user_id": _ACTIVE_USER_ID}), encoding="utf-8")
+                tmp.replace(_ACTIVE_USER_PATH)
+            else:
+                _ACTIVE_USER_PATH.unlink(missing_ok=True)
+        except OSError as exc:
+            logger.warning("Could not save the connected Gmail account: %s", exc)
 
 
 def get_active_gmail_user_id() -> Optional[str]:
     with _ACTIVE_USER_ID_LOCK:
+        global _ACTIVE_USER_ID, _ACTIVE_USER_LOADED
+        if not _ACTIVE_USER_LOADED:
+            _ACTIVE_USER_LOADED = True
+            try:
+                _ACTIVE_USER_ID = _normalized(json.loads(_ACTIVE_USER_PATH.read_text(encoding="utf-8")).get("user_id")) or None
+            except (OSError, ValueError, AttributeError):
+                _ACTIVE_USER_ID = None
         return _ACTIVE_USER_ID
 
 
@@ -217,7 +242,10 @@ def initiate_connect(payload: GmailConnectPayload, settings: Settings) -> JSONRe
     _clear_cached_profile(user_id)
     try:
         client = _get_composio_client(settings)
-        req = client.connected_accounts.initiate(user_id=user_id, auth_config_id=auth_config_id)
+        # `initiate` is retired for Composio-managed OAuth configs; `link` is the supported flow.
+        req = client.connected_accounts.link(
+            user_id=user_id, auth_config_id=auth_config_id, allow_multiple=True
+        )
         data = {
             "ok": True,
             "redirect_url": getattr(req, "redirect_url", None) or getattr(req, "redirectUrl", None),

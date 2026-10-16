@@ -1,0 +1,103 @@
+{
+  "label": "words",
+  "model": "(words and people only)",
+  "agents": 277,
+  "true_duplicate_pairs": 180,
+  "creation_cases": 51,
+  "cost_usd": 0.0,
+  "runs": {
+    "defaults {\"SAME_TOPIC_SIMILARITY\": 0.55, \"DIFFERENT_TOPIC_SIMILARITY\": 0.25, \"TOPIC_ONLY_SIMILARITY\": 0.8}": {
+      "consolidation": {
+        "groups_formed": 56,
+        "false_merge_groups": 0,
+        "pair_precision": 1.0,
+        "pair_recall": 0.5888888888888889,
+        "agents_after": 197,
+        "wrong_groups": []
+      },
+      "creation": {
+        "reuse_when_should": 0.6,
+        "wrong_reuse": 0,
+        "by_kind": {
+          "new name, same thread": "15/15",
+          "paraphrase, same thread": "0/10",
+          "brand new": "4/4",
+          "same topic, another person": "16/16",
+          "same first name, another person": "6/6"
+        },
+        "mistakes": [
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Can You Check On Getting My Travel Docum",
+            "expected": "g102",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Medical Coverage Reimbursement?",
+            "expected": "g103",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Cooking Area Renovation Going",
+            "expected": "g104",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Computer Guarantee Coverage",
+            "expected": "g106",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Sort Out My Vehicle Licence For This Yea",
+            "expected": "g107",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Where Are We On Restructuring My Home Lo",
+            "expected": "g114",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Shingles Checkup",
+            "expected": "g112",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Airline Ticket To Portugal",
+            "expected": "g101",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Photovoltaic Panel Estimate",
+            "expected": "g126",
+            "got": null,
+            "ok": false
+          },
+          {
+            "kind": "paraphrase, same thread",
+            "name": "Court Summons",
+            "expected": "g123",
+            "got": null,
+            "ok": false
+          }
+        ]
+      }
+    }
+  }
+}

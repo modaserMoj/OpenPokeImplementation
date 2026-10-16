@@ -1,0 +1,23 @@
+RETRIEVAL EVAL  label=compare  agents=277  requests=44 (dup_trap 10, exact 10, indirect 10, paraphrase 14)
+====================================================================================================
+Right thread on the list the main agent sees (top 10 + 3 most recent):
+   configuration                         all   dup_trap      exact   indirect paraphrase   main agent
+   words only                          68.2%       100%       100%       100%         0%          68%
+   semantic pplx-embed-v1-0.6b         95.5%       100%       100%       100%        86%          95%
+   HYBRID   pplx-embed-v1-0.6b         93.2%       100%       100%       100%        79%          93%
+   semantic voyage-4-lite             100.0%       100%       100%       100%       100%         100%
+   HYBRID   voyage-4-lite              95.5%       100%       100%       100%        86%          95%
+   semantic pplx-embed-v1-4b          100.0%       100%       100%       100%       100%         100%
+   HYBRID   pplx-embed-v1-4b           95.5%       100%       100%       100%        86%          95%
+
+Ranker quality alone, right thread within the top k (all requests):
+   configuration                         top 3    top 5   top 10    paraphrase top 5
+   words only                            68.2%    68.2%    68.2%                  0%
+   semantic pplx-embed-v1-0.6b           93.2%    95.5%    95.5%                 86%
+   HYBRID   pplx-embed-v1-0.6b           84.1%    88.6%    93.2%                 64%
+   semantic voyage-4-lite               100.0%   100.0%   100.0%                100%
+   HYBRID   voyage-4-lite                93.2%    95.5%    95.5%                 86%
+   semantic pplx-embed-v1-4b            100.0%   100.0%   100.0%                100%
+   HYBRID   pplx-embed-v1-4b             88.6%    93.2%    95.5%                 79%
+
+Agent list size (estimate): 479 tokens shown vs 2962 tokens for every name (names only).

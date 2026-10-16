@@ -1,0 +1,21 @@
+LIVE TRACE: email send guard, attempt 4 (main agent on Haiku) - FAILED: old drafts offered, approval asked twice, send refused
+Causes: model skipped approve_send and listed old drafts from chat memory; shown-text matching used containment so the revision was never recorded; worker tried an old untracked draft id.
+Fix: a clear yes/send is approved in code before the model runs; showing a new draft retires older ones; shown text must equal the draft; untracked draft ids -> create a new draft.
+
+<user_message timestamp="2026-10-14 23:27:40">make it a bit shorter remove mooved to</user_message>
+<poke_reply timestamp="2026-10-14 23:27:43">To: jane.doe@example.com | Subject: Meeting at 5 AM |  | Now at 5 AM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:27:43">Here's the shorter version with "moved to" removed. Reply "yes" to send it. Nothing has gone out yet.</poke_reply>
+<user_message timestamp="2026-10-14 23:27:55">no include workd meeting in it</user_message>
+<poke_reply timestamp="2026-10-14 23:27:58">To: jane.doe@example.com | Subject: Work meeting moved to 5 AM |  | Work meeting is now at 5 AM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:27:58">Here's the updated draft with "work meeting." Reply "yes" to send it. Nothing has gone out yet.</poke_reply>
+<user_message timestamp="2026-10-14 23:28:03">send</user_message>
+<poke_reply timestamp="2026-10-14 23:28:06">Which one should go out? Three are waiting: | 1. To jane.doe@example.com, "Work meeting moved to 5 AM": "Work meeting is now at 5 AM." | 2. To jane.doe@example.com, "Meeting moved to 3 P
+<user_message timestamp="2026-10-14 23:28:16">3</user_message>
+<poke_reply timestamp="2026-10-14 23:28:21">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:28:21">Here's #3, to john.roe@example.com. Nothing's sent yet. Reply "yes" to send it, or tell me what to change.</poke_reply>
+<user_message timestamp="2026-10-14 23:28:25">yes</user_message>
+<poke_reply timestamp="2026-10-14 23:28:29">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:28:33">Sending the 3 PM note to john.roe@example.com now. I'll confirm once it's actually out.</poke_reply>
+<agent_message timestamp="2026-10-14 23:28:39">[SUCCESS] Email to Jane: Not sent. The system refused `gmail_execute_draft` for draft r-2264595802733316322 because it has no approval record for this exact email. I did not retry. |  | **Ex
+<poke_reply timestamp="2026-10-14 23:28:42">To: john.roe@example.com | Subject: Meeting moved to 3 PM |  | Hi, the meeting's been moved to 3 PM.</poke_reply>
+<poke_reply timestamp="2026-10-14 23:28:42">Not sent. My last "sending" message was wrong. The send was refused because your yes didn't register as approval. Reply "yes" to send this exact one to john.roe@example.com. Also, the 5 AM and

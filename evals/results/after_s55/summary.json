@@ -1,0 +1,36 @@
+{
+  "label": "after_s55",
+  "dataset_sha": "b7d31a52501b",
+  "requests": 40,
+  "api_errors_excluded": 0,
+  "rate_limit_retries": 0,
+  "roster_size": 277,
+  "accuracy": 0.95,
+  "accuracy_with_duplicate_check": 0.95,
+  "reuse_recall": 0.9333333333333333,
+  "duplicate_agent_rate": 0.06666666666666667,
+  "fragmented_requests": 20,
+  "primary_hit_rate": 0.8,
+  "wrong_reuse_rate": 0.0,
+  "no_route_rate": 0.0,
+  "by_category": {
+    "dup_trap": 1.0,
+    "exact": 1.0,
+    "indirect": 0.8,
+    "new": 1.0
+  },
+  "outcomes": {
+    "correct_reuse": 28,
+    "correct_new": 10,
+    "missed_reuse": 2,
+    "wrong_reuse": 0,
+    "no_route": 0
+  },
+  "prompt_tokens_first_call_avg": 5667.125,
+  "prompt_tokens_per_request_avg": 5667.125,
+  "llm_calls_per_request_avg": 1,
+  "cost_usd_per_request_avg": 0.0059605925,
+  "cost_usd_total": 0.23842370000000002,
+  "latency_s_per_request_p50": 3.021,
+  "latency_s_per_request_p95": 5.843
+}

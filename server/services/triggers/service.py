@@ -180,6 +180,9 @@ class TriggerService:
         updated = self._store.update(trigger_id, agent_name, fields)
         return self._store.fetch_one(trigger_id, agent_name) if updated else existing
 
+    def reassign_agent(self, old_agent_name: str, new_agent_name: str) -> int:
+        return self._store.reassign_agent(old_agent_name, new_agent_name)
+
     def list_triggers(self, *, agent_name: str) -> List[TriggerRecord]:
         return self._store.list_for_agent(agent_name)
 
